@@ -5,24 +5,20 @@ import helpers
 import minst.sources.philharmonia as philz
 
 
-def test_philz_instrument_code_to_name():
-    # We'll just test a few.
-    test_pairs = [("AS", "saxophone-alto"),
-                  ("FG", "bassoon"),
-                  ("TB", "trombone"),
-                  # No valid mapping should produce None
-                  ("SZ", None),
-                  ("what", None)]
-
-    for value, expected in test_pairs:
-        result = philz.instrument_code_to_name(value)
-        yield helpers.__test, result, expected
-
-
-def test_philz_parse():
-    test_pairs = [("011PFNOF.flac", ("piano", "NO", "F")),
-                  ("232TUNOF.flac", ("tuba", "NO", "F")),
-                  ("472TNA1F", (None, "A1", "F"))]
+def test_parse_phil_path():
+    test_pairs = [("banjo_B3_very-long_piano_normal.mp3",
+                   ("banjo", "B3", "very-long", "piano", "normal")),
+                  ("cello_A3_1_fortissimo_arco-normal.mp3",
+                   ("cello", "A3", "1", "fortissimo", "arco-normal")),
+                  ("trumpet_A3_15_pianissimo_normal.mp3",
+                   ("trumpet", "A3", "15", "pianissimo", "normal")),
+                  ("double-bass_A1_1_mezzo-forte_arco-normal",
+                   ("double-bass", "A1", "1", "mezzo-forte", "arco-normal")),
+                  ("/Users/cjacoby/data/philharmonia/www.philharmonia.co.uk/"
+                   "assets/audio/samples/double bass/double bass"
+                   "/double-bass_E1_phrase_mezzo-forte_arco-au-talon.mp3",
+                   ("double-bass", "E1", "phrase", "mezzo-forte",
+                    "arco-au-talon"))]
 
     for value, expected in test_pairs:
         result = philz.parse(value)

@@ -1,6 +1,7 @@
 import hashlib
 import os
 import colorama
+import zipfile
 
 COLOR_MAP = {
     "yellow": colorama.Fore.YELLOW,
@@ -123,3 +124,35 @@ def colorize(text, color="yellow"):
 
     return "{0}{1}{2}".format(COLOR_MAP[color], text,
                               colorama.Style.RESET_ALL)
+
+
+def unzip_files(file_list, force=False):
+    """Given a list of file paths, unzip them in place.
+
+    Attempts to skip it if the extracted folder exists.
+
+    Parameters
+    ----------
+    file_list : list of str
+        Files to extract.
+
+    force : bool, default=False
+        Force the unzip if the file exists.
+
+    Returns
+    -------
+    List of created outputs.
+    """
+    result_list = []
+    for zip_path in file_list:
+        working_dir = os.path.dirname(zip_path)
+        zip_name = os.path.splitext(os.path.basename(zip_path))[0]
+        new_folder_path = os.path.join(working_dir, zip_name)
+        if force or not os.path.exists(new_folder_path):
+            with zipfile.ZipFile(zip_path, 'r') as myzip:
+                # Create a directory of the same name as the zip.
+                os.makedirs(new_folder_path)
+                myzip.extractall(path=new_folder_path)
+                result_list.append(new_folder_path)
+
+    return result_list

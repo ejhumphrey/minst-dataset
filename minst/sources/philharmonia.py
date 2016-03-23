@@ -2,7 +2,6 @@ import glob
 import logging
 import os
 import pandas as pd
-import zipfile
 
 import minst.utils as utils
 
@@ -88,9 +87,10 @@ def collect(base_dir, articulations=["normal", "vibrato"]):
             articulation_skipped += [audio_file_path]
 
     logger.info("Using {} files from {}.".format(len(records), NAME))
-    logger.warn(utils.colorize("Skipped {} files in {} with "
-                               "articulation not in {}"
-                               .format(len(articulation_skipped)), "red"))
+    logger.warn(
+        utils.colorize("Skipped {} files with articulation not in {}"
+                       .format(len(articulation_skipped), articulations),
+                       "red"))
 
     with open("log_philharmonia_skipped.txt", 'w') as fh:
         fh.write("\n".join(articulation_skipped))
