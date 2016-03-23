@@ -1,0 +1,14 @@
+{
+ "guitar": ["acoustic-guitar", "guitar-acoustic-steel", "guitar-acoustic-nylon", "guitar", "Guitar"],
+ "bassoon": ["bassoon", "Bassoon"],
+ "cello": ["cello", "Cello"],
+ "clarinet": ["clarinet", "BbClar", "EbClar"],
+ "double-bass": ["bass-double", "Bass", "double-bass"],
+ "flute": ["flute", "Flute"],
+ "horn-french": ["horn-french", "french-horn", "Horn"],
+ "oboe": ["Oboe", "oboe"],
+ "trombone": ["trombone", "TenorTrombone"],
+ "trumpet": ["trumpet", "Trumpet"],
+ "tuba": ["Tuba", "tuba"],
+ "violin": ["violin", "Violin"]
+}
