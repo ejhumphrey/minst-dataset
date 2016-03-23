@@ -71,3 +71,26 @@ class InstrumentClassMap(object):
         data keys)
         """
         return len(self.data.keys())
+
+
+def normalize_instrument_names(dframe):
+    """Convert all the varied datasets representation of
+    instrument names to the single one used in
+    our class set.
+
+    Parameters
+    ----------
+    dframe : pandas.DataFrame with an "instrument" column.
+
+    Returns
+    -------
+    normalized_df : pandas.DataFrame
+        A copy of the input dataframe, with instruments only from
+        the InstrumentClassMap.
+    """
+    classmap = InstrumentClassMap()
+    new_df = dframe.copy()
+    for i in range(len(new_df)):
+        old_class = new_df.iloc[i]["instrument"]
+        new_df.iloc[i]["instrument"] = classmap[old_class]
+    return new_df

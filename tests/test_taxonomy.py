@@ -1,4 +1,5 @@
 import pytest
+import pandas as pd
 
 import minst.taxonomy as tax
 
@@ -43,3 +44,12 @@ def test_InstrumentClass_indices_match(classmap):
     for i in range(classmap.size):
         classname = classmap.from_index(i)
         assert classmap.get_index(classname) == i
+
+
+def test_normalize_instrument_names(classmap):
+    example_data = {"instrument": classmap.allnames}
+    df = pd.DataFrame(example_data)
+
+    norm_df = tax.normalize_instrument_names(df)
+    assert not norm_df.empty
+    assert set(norm_df["instrument"].unique()) == set(classmap.classnames)

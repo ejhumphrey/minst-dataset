@@ -88,7 +88,7 @@ def collect(base_dir, articulations=["normal", "vibrato"]):
 
     logger.info("Using {} files from {}.".format(len(records), NAME))
     logger.warn(
-        utils.colorize("Skipped {} files with articulation not in {}"
+        utils.colorize("Skipped {} file(s) with articulation not in {}"
                        .format(len(articulation_skipped), articulations),
                        "red"))
 
