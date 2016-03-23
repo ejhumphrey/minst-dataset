@@ -1,11 +1,25 @@
 import pytest
 import glob
 import os
+import shutil
+import tempfile
 
 import minst.utils
 
 
 DIRNAME = os.path.dirname(__file__)
+
+@pytest.fixture()
+def workspace(request):
+    test_workspace = tempfile.mkdtemp()
+
+    def fin():
+        if os.path.exists(test_workspace):
+            shutil.rmtree(test_workspace)
+
+    request.addfinalizer(fin)
+
+    return test_workspace
 
 
 def collect_files(exts):
@@ -67,3 +81,11 @@ def test_check_many_audio_files():
         yield __test, sterr[0], False
 
 
+def test_trim(workspace):
+    afiles = collect_files(['mp3', 'aif', 'aiff'])
+    ofile = minst.utils.trim(afiles[0], workspace, 0.5)
+    assert ofile
+
+    other_files = collect_files(['zip'])
+    ofile = minst.utils.trim(other_files[0], workspace, 0.5)
+    assert ofile is None

@@ -2,6 +2,7 @@ import claudio
 import colorama
 import hashlib
 from joblib import Parallel, delayed
+import logging
 import os
 import wave
 import zipfile
@@ -15,6 +16,8 @@ COLOR_MAP = {
     "cyan": colorama.Fore.CYAN,
     "white": colorama.Fore.WHITE
 }
+
+logger = logging.getLogger(__name__)
 
 
 def generate_id(prefix, name, hash_len=8):
@@ -212,3 +215,44 @@ def check_many_audio_files(fileset, min_duration=0.0, num_cpus=-1, verbose=0):
     pool = Parallel(n_jobs=num_cpus, verbose=0)
     fx = delayed(check_audio_file)
     return pool(fx(af, min_duration) for af in fileset)
+
+
+def trim(filename, output_dir=None, duration=None):
+    """Takes a single audio file, and standardizes it based
+    on the parameters provided.
+
+    Heads up! Modifies the file in place...
+
+    Parameters
+    ----------
+    filename : str
+        Full path to the audio file to work with.
+
+    output_dir : str or None
+        Path to write updated files to under the same basename. If None,
+        overwrites the input file.
+
+    duration : float or None
+        If not None, trims the final audio file to final_duration
+        seconds.
+
+    Returns
+    -------
+    output_audio_path : str or None
+        Valid full file path if succeeded, or None if failed.
+    """
+    output_fname = None
+    if output_dir:
+        create_directory(output_dir)
+        output_fname = os.path.join(output_dir, os.path.basename(filename))
+
+    # Note: output_fname of None will trim in place.
+    success = claudio.sox.trim(filename, output_fname, 0, duration)
+    if not success:
+        logger.error(colorize("claudio.sox.trim Failed: {} -- "
+                              "moving on...".format(filename), "red"))
+        output_fname = None
+    else:
+        output_fname = filename if output_dir is None else output_fname
+
+    return output_fname
