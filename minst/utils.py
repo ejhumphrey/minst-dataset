@@ -1,5 +1,16 @@
 import hashlib
 import os
+import colorama
+
+COLOR_MAP = {
+    "yellow": colorama.Fore.YELLOW,
+    "red": colorama.Fore.RED,
+    "green": colorama.Fore.GREEN,
+    "blue": colorama.Fore.BLUE,
+    "magenta": colorama.Fore.MAGENTA,
+    "cyan": colorama.Fore.CYAN,
+    "white": colorama.Fore.WHITE
+}
 
 
 def generate_id(prefix, name, hash_len=8):
@@ -73,3 +84,42 @@ def note_distance(note_pair):
     base_dist += (oct_diff * 12)
 
     return base_dist
+
+
+def create_directory(dname):
+    """Create the output directory recursively if it doesn't already exist.
+
+    Parameters
+    ----------
+    dname : str
+        Directory to create.
+
+    Returns
+    -------
+    success : bool
+        True if the requested directory now exists.
+    """
+    if not os.path.exists(dname):
+        os.makedirs(dname)
+    return os.path.exists(dname)
+
+
+def colorize(text, color="yellow"):
+    """Colorize terminal text.
+
+    Parameters
+    ----------
+    text : str
+        Text to color.
+
+    color : string
+        Name of color to print
+
+    Returns
+    -------
+    colored_text : str
+        String of colored text.
+    """
+
+    return "{0}{1}{2}".format(COLOR_MAP[color], text,
+                              colorama.Style.RESET_ALL)

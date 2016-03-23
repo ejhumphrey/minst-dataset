@@ -2,7 +2,7 @@ import pytest
 import os
 
 import helpers
-import minst.sources.uiowa as U
+import minst.sources.uiowa as uiowa
 
 
 def test_uiowa_parse():
@@ -16,7 +16,7 @@ def test_uiowa_parse():
                   ("Trumpet.vib.ff.E3B3.aiff", ("Trumpet", "ff", "E3B3"))]
 
     for value, expected in test_pairs:
-        yield helpers.__test, U.parse(value), expected
+        yield helpers.__test, uiowa.parse(value), expected
 
 
 def test_uiowa_num_notes_from_filename():
@@ -29,7 +29,7 @@ def test_uiowa_num_notes_from_filename():
                   ("Trumpet.vib.ff.E3B3.aiff", 8)]
 
     for value, expected in test_pairs:
-        result = U.num_notes_from_filename(value)
+        result = uiowa.num_notes_from_filename(value)
         yield helpers.__test, result, expected
 
 
@@ -37,6 +37,6 @@ def test_uiowa_collect():
     """Test that an input folder with files in uiowa format is correctly
     converted to a dataframe."""
     uiowa_dir = os.path.join(os.path.dirname(__file__), 'dummy_uiowa')
-    uiowa_df = U.collect(uiowa_dir)
+    uiowa_df = uiowa.collect(uiowa_dir)
     yield helpers.__test_df_has_data, uiowa_df
-    yield helpers.__test_pd_output, uiowa_df, "uiowa"
+    yield helpers.__test_pd_output, uiowa_df, uiowa.NAME
