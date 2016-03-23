@@ -1,6 +1,9 @@
-import hashlib
-import os
+import claudio
 import colorama
+import hashlib
+from joblib import Parallel, delayed
+import os
+import wave
 import zipfile
 
 COLOR_MAP = {
@@ -156,3 +159,56 @@ def unzip_files(file_list, force=False):
                 result_list.append(new_folder_path)
 
     return result_list
+
+
+def check_audio_file(filename, min_duration=0.0):
+    """Check the integrity of an audio file.
+
+    Parameters
+    ----------
+    filename : str
+        Path to an audio file on disk.
+
+    min_duration : scalar, default=0.0
+        Minimum time duration for the audio file to be considered valid.
+
+    Returns
+    -------
+    status : bool
+        True if legit, False otherwise.
+
+    message : ExceptionType, or None
+        None on success, else the exception class capturing the death.
+    """
+    status = False
+    error = None
+    try:
+        aobj = claudio.fileio.AudioFile(filename, bytedepth=2)
+        status = aobj.duration >= min_duration
+    except (AssertionError, EOFError, wave.Error, ValueError) as derp:
+        # This is a claudio bug, eventually will be a SoX error
+        error = derp
+
+    return status, error
+
+
+def check_many_audio_files(fileset, min_duration=0.0, num_cpus=-1, verbose=0):
+    """
+    Tries to load every file, and returns a list of any file
+    that fails to load.
+
+    Parameters
+    ----------
+    fileset : list of str
+        Set of audiofiles on disk.
+
+    Returns
+    -------
+    status : list of (bool, ...)
+        Aligned list of result tuples, given the input. The first item will
+        contain the status (True if good), and the remainder will describe
+        the issue caught.
+    """
+    pool = Parallel(n_jobs=num_cpus, verbose=0)
+    fx = delayed(check_audio_file)
+    return pool(fx(af, min_duration) for af in fileset)

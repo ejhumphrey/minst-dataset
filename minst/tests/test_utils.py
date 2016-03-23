@@ -1,4 +1,21 @@
+import pytest
+import glob
+import os
+
 import minst.utils
+
+
+DIRNAME = os.path.dirname(__file__)
+
+
+def collect_files(exts):
+    afiles = []
+    for n in range(7):
+        fmt = os.path.join(DIRNAME, "/".join(["*"]*n), "*.{}*")
+        for ext in exts:
+            afiles += glob.glob(fmt.format(ext))
+
+    return afiles
 
 
 def __test(value, expected):
@@ -30,3 +47,23 @@ def test_get_note_distance():
     for value, expected in test_pairs:
         result = minst.utils.note_distance(value)
         yield __test, result, expected
+
+
+def test_check_audio_file():
+    for af in collect_files(['mp3', 'aif', 'aiff']):
+        yield __test, minst.utils.check_audio_file(af), (True, None)
+
+    for af in collect_files(['zip']):
+        yield __test, minst.utils.check_audio_file(af)[0], False
+
+
+def test_check_many_audio_files():
+    afiles = collect_files(['mp3', 'aif', 'aiff'])
+    for sterr in minst.utils.check_many_audio_files(afiles):
+        yield __test, sterr, (True, None)
+
+    other_files = collect_files(['zip'])
+    for sterr in minst.utils.check_many_audio_files(other_files):
+        yield __test, sterr[0], False
+
+
