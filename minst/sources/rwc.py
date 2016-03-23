@@ -38,6 +38,8 @@ RWC_INSTRUMENT_MAP = dict()
 with open(RWC_INSTRUMENT_MAP_PATH, 'r') as fh:
     RWC_INSTRUMENT_MAP.update(**json.load(fh))
 
+NAME = "rwc"
+
 
 def instrument_code_to_name(rwc_instrument_code):
     """Use the rwc_instrument_map.json to convert an rwc_instrument_code
@@ -81,7 +83,7 @@ def parse(filename):
     return instrument_name, style_code, dynamic_code
 
 
-def collect(base_dir, dataset="rwc"):
+def collect(base_dir):
     """Convert a base directory of RWC files to a pandas dataframe.
 
     Parameters
@@ -109,11 +111,11 @@ def collect(base_dir, dataset="rwc"):
     records = []
     for audio_file_path in glob.glob(os.path.join(base_dir, "*/*/*.flac")):
         instrument_name, style_code, dynamic_code = parse(audio_file_path)
-        uid = utils.generate_id(dataset, utils.filebase(audio_file_path))
+        uid = utils.generate_id(NAME, utils.filebase(audio_file_path))
         indexes.append(uid)
         records.append(
             dict(audio_file=audio_file_path,
-                 dataset=dataset,
+                 dataset=NAME,
                  instrument=instrument_name,
                  dynamic=dynamic_code))
 
