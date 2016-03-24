@@ -1,2 +1,3 @@
 # minst-dataset
-Music INSTrument dataset
+
+The MNIST of music instrument sounds.

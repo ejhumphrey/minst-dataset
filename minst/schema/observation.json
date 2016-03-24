@@ -1,0 +1,22 @@
+{
+    "type": "object",
+    "properties": {
+        "source_key": { "type": "string" },
+        "partition": { "type": "string" },
+        "start_time": { "type": "number", "minimum": 0.0 },
+        "note_number": { "type": "number" },
+        "dynamic": { "type": "string" },
+        "instrument": { "type": "string" },
+        "index": { "type": "string" },
+        "dataset": {
+            "enum": [
+                "uiowa",
+                "rwc",
+                "philharmonia"
+            ]
+        },
+        "audio_file": { "type": "string" },
+        "duration": { "type": "number" },
+        "features": { "type": "object" }
+    }
+}
