@@ -12,29 +12,35 @@ $ python scripts/segment_collection.py \
 import argparse
 from joblib import Parallel, delayed
 import logging
-import matplotlib
+import matplotlib.pyplot as plt
 import os
 import pandas as pd
 import sys
 
-matplotlib.use("TkAgg")
+# matplotlib.use("macosx")
 
-import minst.segment as S
+import minst.signal as S
 import minst.utils as utils
+import minst.visualize as V
 
 logger = logging.getLogger(__name__)
 
 
 def segment_one(index, audio_file, mode, output_directory):
-    oframe, fig = S.segment(audio_file, mode)
-    output_frame = os.path.join(output_directory, "{}.csv".format(index))
-    output_fig = os.path.join(output_directory, "{}.png".format(index))
+    oframe = S.segment(audio_file, mode)
+    output_frame = os.path.join(output_directory,
+                                "{}-{}.csv".format(index, mode))
+    print(oframe)
     oframe.to_csv(output_frame)
+    fig = V.draw_onset_data(audio_file, oframe,
+                            title="{} - {}".format(index, mode))
+    output_fig = os.path.join(output_directory,
+                              "{}-{}.png".format(index, mode))
     fig.savefig(output_fig)
+    plt.close(fig)
     if not os.path.exists(output_frame):
         raise ValueError("Did not create output! {}".format(output_frame))
-    else:
-        print(output_frame)
+
     return output_frame
 
 
