@@ -80,7 +80,7 @@ def num_notes_from_filename(filename):
     return result
 
 
-def collect(base_dir, depth=6):
+def collect(base_dir, depth=6, fext="*.aif*"):
     """Convert a base directory of UIowa files to a pandas dataframe.
 
     Parameters
@@ -106,10 +106,10 @@ def collect(base_dir, depth=6):
     root_dir = os.path.join(base_dir, "theremin.music.uiowa.edu",
                             "sound files", "MIS")
     for n in range(depth):
-        glbpath = os.path.join(root_dir, "/".join(["*"]*n), "*.aif*")
+        glbpath = os.path.join(root_dir, "/".join(["*"]*n), fext)
         for audio_file_path in glob.glob(glbpath):
             instrument, dynamic, notevalue = parse(audio_file_path)
-            uid = utils.generate_id(NAME, audio_file_path)
+            uid = utils.generate_id(NAME, audio_file_path.split(base_dir)[-1])
             indexes.append(uid)
             records.append(
                 dict(audio_file=audio_file_path,
