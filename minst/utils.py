@@ -3,6 +3,7 @@ import colorama
 import hashlib
 from joblib import Parallel, delayed
 import logging
+import numpy as np
 import os
 import wave
 import zipfile
@@ -256,3 +257,27 @@ def trim(filename, output_dir=None, duration=None):
         output_fname = filename if output_dir is None else output_fname
 
     return output_fname
+
+
+def canny(nlen, beta, sig=2.0):
+    """Create a canny filter.
+
+    Parameters
+    ----------
+    nlen : int
+        Length of the kernel.
+
+    beta : scalar > 0
+        Frequency of the sinusoid shape.
+
+    sig : scalar > 0
+        todo.
+
+    Returns
+    -------
+    kernel : np.ndarray, ndim=1, len=nlen
+        Kernel coefficients.
+    """
+    n = np.linspace(-beta, beta, nlen)
+    alpha = (-n / np.power(sig, 2.))
+    return alpha * np.exp(-(n ** 2.0) / (2.0 * (sig ** 2.0)))
