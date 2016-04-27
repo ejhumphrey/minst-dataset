@@ -6,11 +6,13 @@ Show how to connect to keypress events
 from __future__ import print_function
 import argparse
 import claudio
-import logging
+# import logging
 import matplotlib
 import numpy as np
 import pandas as pd
 import sys
+import threading
+import time
 
 matplotlib.use("TkAGG")
 
@@ -20,7 +22,13 @@ import minst.signal as S
 
 class OnsetCanvas(object):
 
-    def __init__(self, audio_file, output_file, onset_data=None, nhop=100):
+    def __init__(self, audio_file, output_file, onset_data=None,
+                 nhop=100, group=None, target=None, name=None,
+                 verbose=None):
+        # super(OnsetCanvas, self).__init__(
+        #     group=group, target=target,
+        #     name=name, verbose=verbose)
+
         self.fig, self.axes = plt.subplots(nrows=2, ncols=1,
                                            figsize=(16, 6))
 
@@ -38,10 +46,20 @@ class OnsetCanvas(object):
         self.env_handle = self.axes[1].plot(self.trange, self.envelope)
         self.onset_handles = []
         self.refresh_xlim()
-        plt.show(block=False)
+        # plt.show(block=False)
 
         self.set_onset_data(onset_data)
         self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
+        self._alive = False
+
+    def run(self):
+        self._alive = True
+        while self.alive:
+            time.sleep(0.1)
+
+    @property
+    def alive(self):
+        return self._alive
 
     def set_onset_data(self, onset_data):
         self.onset_data = onset_data
@@ -61,7 +79,7 @@ class OnsetCanvas(object):
             hnd.remove()
 
         self.onset_handles = []
-        print("drawing lines")
+        print("drawing lines : {}".format(self.onset_times))
         self.onset_handles += [self.axes[0].vlines(
             self.onset_data.time, ymin=-1.05*self.x_max,
             ymax=1.05*self.x_max, color='k', alpha=0.5, linewidth=3)]
@@ -96,12 +114,14 @@ class OnsetCanvas(object):
             print("Saving to: {}".format(self.output_file))
             self.save_onsets()
             plt.close()
+            self._alive = False
 
-        if event.key == 'q':
+        elif event.key == 'q':
             print("Closing")
             plt.close()
+            self._alive = False
 
-        if event.key == ' ':
+        elif event.key == ' ':
             x, y = event.xdata, event.ydata
             print('({:4}, {:4})'.format(x, y))
             if self.has_onsets and (np.abs(self.onset_times - x) < 0.5).any():
@@ -120,46 +140,34 @@ def main():
     afile = ("/Volumes/SHUTTLE/uiowa/theremin.music.uiowa.edu/sound files"
              "/MIS/Strings/cello/Cello.arco.mf.sulD.C4Bb4.ogg")
     ofile = "/Users/ejhumphrey/Desktop/segtest/uiowa32813686-hll.csv"
-    odata = pd.read_csv(ofile)
-    return OnsetCanvas(afile, "temp.csv", onset_data=odata)
+    return OnsetCanvas(afile, "temp.csv", onset_data=pd.read_csv(ofile))
+
+
+def annotate_one(audio_file, onset_file, output_file=None):
+    if output_file is None:
+        output_file = onset_file.replace(".csv", "-fix.csv")
+
+    canvas = OnsetCanvas(audio_file, output_file, pd.read_csv(onset_file))
+    # thread = threading.Thread(target=canvas.run)
+    # thread.start()
+    # thread.join()
+    plt.show(block=True)
+
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "audio_file",
-        metavar="audio_file", type=str,
+        "index_file",
+        metavar="index_file", type=str,
         help=".")
-    parser.add_argument(
-        "onset_data",
-        metavar="onset_data", type=str,
-        help=".")
-    parser.add_argument(
-        "--mode",
-        metavar="mode", type=str, default='onsets',
-        help="File basename for the generated output.")
-    parser.add_argument(
-        "--output_index",
-        metavar="output_index", type=str, default='index.csv',
-        help="File basename for the generated output.")
     parser.add_argument(
         "--verbose",
         metavar="verbose", type=int, default=0,
         help="Number of CPUs to use; by default, uses all.")
 
-    logging.basicConfig(level=logging.DEBUG)
-
     args = parser.parse_args()
-    onset_data = pd.read_csv(args.onset_data)
+    dframe = pd.read_csv(args.index_file)
 
-    onsets = OnsetCanvas(args.audio_file, onset_data)
-    plt.show()
-    # main()
-    # outputs = segment_many(dframe.index.tolist(), dframe.audio_file,
-    #                        args.mode,
-    #                        args.output_dir, num_cpus=args.num_cpus,
-    #                        verbose=args.verbose)
-    # dframe[args.mode] = outputs
-    # output_file = os.path.join(args.output_dir, args.output_index)
-    # dframe.to_csv(output_file)
-    # sys.exit(0 if os.path.exists(output_file) else 1)
+    for idx, row in dframe.iterrows():
+        annotate_one(row.audio_file, row.onset_file)

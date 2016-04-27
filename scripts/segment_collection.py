@@ -32,12 +32,12 @@ def segment_one(index, audio_file, mode, output_directory):
                                 "{}-{}.csv".format(index, mode))
     print(oframe)
     oframe.to_csv(output_frame)
-    fig = V.draw_onset_data(audio_file, oframe,
-                            title="{} - {}".format(index, mode))
-    output_fig = os.path.join(output_directory,
-                              "{}-{}.png".format(index, mode))
-    fig.savefig(output_fig)
-    plt.close(fig)
+    # fig = V.draw_onset_data(audio_file, oframe,
+    #                         title="{} - {}".format(index, mode))
+    # output_fig = os.path.join(output_directory,
+    #                           "{}-{}.png".format(index, mode))
+    # fig.savefig(output_fig)
+    # plt.close(fig)
     if not os.path.exists(output_frame):
         raise ValueError("Did not create output! {}".format(output_frame))
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         help="Output path for cut-point estimations.")
     parser.add_argument(
         "--mode",
-        metavar="mode", type=str, default='onsets',
+        metavar="mode", type=str, default='hll',
         help="File basename for the generated output.")
     parser.add_argument(
         "--output_index",
