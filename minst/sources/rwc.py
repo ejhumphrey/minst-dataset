@@ -83,7 +83,7 @@ def parse(filename):
     return instrument_name, style_code, dynamic_code
 
 
-def collect(base_dir):
+def collect(base_dir, fext="*.flac"):
     """Convert a base directory of RWC files to a pandas dataframe.
 
     Parameters
@@ -109,7 +109,8 @@ def collect(base_dir):
 
     indexes = []
     records = []
-    for audio_file_path in glob.glob(os.path.join(base_dir, "*/*/*.flac")):
+    fmt = "*/*/{}".format(fext)
+    for audio_file_path in glob.glob(os.path.join(base_dir, fmt)):
         instrument_name, style_code, dynamic_code = parse(audio_file_path)
         uid = utils.generate_id(NAME, utils.filebase(audio_file_path))
         indexes.append(uid)
