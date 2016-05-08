@@ -5,8 +5,8 @@ import os
 import pandas as pd
 import subprocess
 
-BIN = '/Users/ejhumphrey/hll/hll_mono'
-PARAMS = '/Users/ejhumphrey/hll/HLL_MONO_PARAMS.csv'
+BIN = os.path.expanduser('~/hll/hll_mono')
+PARAMS = os.path.expanduser('~/hll/HLL_MONO_PARAMS.csv')
 
 
 def hll(filename):
