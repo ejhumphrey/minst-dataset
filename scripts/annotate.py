@@ -6,12 +6,10 @@ Show how to connect to keypress events
 from __future__ import print_function
 import argparse
 import claudio
-# import logging
 import matplotlib
 import numpy as np
 import pandas as pd
 import sys
-import threading
 import time
 
 matplotlib.use("TkAGG")
@@ -23,11 +21,8 @@ import minst.signal as S
 class OnsetCanvas(object):
 
     def __init__(self, audio_file, output_file, onset_data=None,
-                 nhop=100, group=None, target=None, name=None,
+                 nhop=100, group=None, target=None, title=None,
                  verbose=None):
-        # super(OnsetCanvas, self).__init__(
-        #     group=group, target=target,
-        #     name=name, verbose=verbose)
 
         self.fig, self.axes = plt.subplots(nrows=2, ncols=1,
                                            figsize=(16, 6))
@@ -46,7 +41,10 @@ class OnsetCanvas(object):
         self.env_handle = self.axes[1].plot(self.trange, self.envelope)
         self.onset_handles = []
         self.refresh_xlim()
-        # plt.show(block=False)
+
+        title = '' if not title else title
+        title = "{}\nx: write and close / w: write / q: close"
+        self.axes[0].set_title(title)
 
         self.set_onset_data(onset_data)
         self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
@@ -108,6 +106,15 @@ class OnsetCanvas(object):
         return np.asarray(self.onset_data.time)
 
     def on_key_press(self, event):
+        """Handle key-press events.
+
+        Catches the following:
+            x : Write current onset data and close this canvas.
+            w : Write current onset data.
+            q : Close this canvas without saving.
+            spacebar : Toggle a marker at the current mouse position.
+
+        """
         print('Received: ', event.key)
         sys.stdout.flush()
         if event.key == 'x':
@@ -115,6 +122,10 @@ class OnsetCanvas(object):
             self.save_onsets()
             plt.close()
             self._alive = False
+
+        if event.key == 'w':
+            print("Saving to: {}".format(self.output_file))
+            self.save_onsets()
 
         elif event.key == 'q':
             print("Closing")
@@ -136,21 +147,12 @@ class OnsetCanvas(object):
             self.set_onset_data(od)
 
 
-def main():
-    afile = ("/Volumes/SHUTTLE/uiowa/theremin.music.uiowa.edu/sound files"
-             "/MIS/Strings/cello/Cello.arco.mf.sulD.C4Bb4.ogg")
-    ofile = "/Users/ejhumphrey/Desktop/segtest/uiowa32813686-hll.csv"
-    return OnsetCanvas(afile, "temp.csv", onset_data=pd.read_csv(ofile))
-
-
-def annotate_one(audio_file, onset_file, output_file=None):
+def annotate_one(audio_file, onset_file, output_file=None, title=None):
     if output_file is None:
         output_file = onset_file.replace(".csv", "-fix.csv")
 
-    canvas = OnsetCanvas(audio_file, output_file, pd.read_csv(onset_file))
-    # thread = threading.Thread(target=canvas.run)
-    # thread.start()
-    # thread.join()
+    canvas = OnsetCanvas(audio_file, output_file, pd.read_csv(onset_file),
+                         title=title)
     plt.show(block=True)
 
 
@@ -170,4 +172,4 @@ if __name__ == '__main__':
     dframe = pd.read_csv(args.index_file)
 
     for idx, row in dframe.iterrows():
-        annotate_one(row.audio_file, row.onset_file)
+        annotate_one(row.audio_file, row.onset_file, title=idx)

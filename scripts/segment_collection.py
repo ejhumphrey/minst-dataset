@@ -4,7 +4,8 @@ Example:
 $ python scripts/segment_collection.py \
     audiofiles.csv \
     outputs \
-    --method onsets \
+    segment_index.csv \
+    --method envelope \
     --num_cpus -1 \
     --verbose 50
 """
@@ -12,36 +13,46 @@ $ python scripts/segment_collection.py \
 import argparse
 from joblib import Parallel, delayed
 import logging
-import matplotlib.pyplot as plt
 import os
 import pandas as pd
 import sys
 
-# matplotlib.use("macosx")
-
 import minst.signal as S
 import minst.utils as utils
-import minst.visualize as V
 
 logger = logging.getLogger(__name__)
 
 
 def segment_one(index, audio_file, mode, output_directory):
-    oframe = S.segment(audio_file, mode)
-    output_frame = os.path.join(output_directory,
-                                "{}-{}.csv".format(index, mode))
-    print(oframe)
-    oframe.to_csv(output_frame)
-    # fig = V.draw_onset_data(audio_file, oframe,
-    #                         title="{} - {}".format(index, mode))
-    # output_fig = os.path.join(output_directory,
-    #                           "{}-{}.png".format(index, mode))
-    # fig.savefig(output_fig)
-    # plt.close(fig)
-    if not os.path.exists(output_frame):
-        raise ValueError("Did not create output! {}".format(output_frame))
+    """Segment a single audio file.
 
-    return output_frame
+    Parameters
+    ----------
+    index : str
+        Index value corresponding to this audio file.
+
+    audio_file : str
+        Path to an audio file on disk.
+
+    mode : str
+        Segmentation mode to use; see minst.signal.ONSETS for more details.
+
+    output_directory : str
+        Path at which to write outputs.
+
+    Returns
+    -------
+    output_file : str
+        Path at which data was written.
+    """
+    oframe = S.segment(audio_file, mode)
+    output_file = os.path.join(output_directory,
+                               "{}-{}.csv".format(index, mode))
+    oframe.to_csv(output_file)
+    if not os.path.exists(output_file):
+        raise ValueError("Did not create output! {}".format(output_file))
+
+    return output_file
 
 
 def segment_many(index, audio_files, mode, output_directory,
@@ -67,7 +78,6 @@ def segment_many(index, audio_files, mode, output_directory,
     output_paths : list
         Filepaths of generated output, or None for failures.
     """
-    print(index)
     utils.create_directory(output_directory)
     pool = Parallel(n_jobs=num_cpus, verbose=verbose)
     fx = delayed(segment_one)
@@ -86,12 +96,12 @@ if __name__ == "__main__":
         metavar="output_dir", type=str,
         help="Output path for cut-point estimations.")
     parser.add_argument(
-        "--mode",
-        metavar="mode", type=str, default='hll',
+        "output_index",
+        metavar="output_index", type=str,
         help="File basename for the generated output.")
     parser.add_argument(
-        "--output_index",
-        metavar="output_index", type=str, default='index.csv',
+        "--mode",
+        metavar="mode", type=str, default='hll',
         help="File basename for the generated output.")
     parser.add_argument(
         "--num_cpus",
