@@ -1,0 +1,36 @@
+sudo: false
+
+addons:
+  apt:
+    packages:
+    - sox
+
+cache:
+  directories:
+  - $HOME/env
+
+language: python
+
+notifications:
+  email: false
+
+python:
+    - "2.7"
+    - "3.4"
+    - "3.5"
+
+install:
+    - pip install coveralls
+    - pip install -r requirements.txt
+    - pip install -e ./
+
+script:
+    - python --version
+    - py.test -v -m unit --cov=minst .
+
+after_success:
+    - coveralls
+    - pip uninstall -y minst
+
+after_failure:
+    - pip uninstall -y minst

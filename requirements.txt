@@ -1,0 +1,1 @@
+git+git://github.com/ejhumphrey/claudio.git
