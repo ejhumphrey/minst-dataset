@@ -27,5 +27,5 @@ if __name__ == "__main__":
         help="A dframe in CSV format.")
 
     args = parser.parse_args()
-    success = build_index(args.dataset, args.base_dir, args.output_file)
+    success = build_index(args.dataset, args.base_dir, args.index_file)
     sys.exit(0 if success else 1)
