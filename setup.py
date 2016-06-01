@@ -29,7 +29,8 @@ if __name__ == "__main__":
             'joblib',
             'claudio',
             'pytest',
-            'colorama'
+            'colorama',
+            'librosa'
         ],
         extras_require={}
     )
