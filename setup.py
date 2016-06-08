@@ -30,7 +30,8 @@ if __name__ == "__main__":
             'claudio',
             'pytest',
             'colorama',
-            'librosa'
+            'librosa',
+            'jsonschema'
         ],
         extras_require={}
     )
