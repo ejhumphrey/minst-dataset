@@ -1,6 +1,6 @@
-import philharmonia as philz
-import rwc as rwc
-import uiowa as uiowa
+from . import philharmonia as philz
+from . import rwc
+from . import uiowa
 
 
 SOURCES = {
