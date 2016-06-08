@@ -28,7 +28,9 @@ if __name__ == "__main__":
             'pandas',
             'joblib',
             'claudio',
-            'pytest'
+            'pytest',
+            'colorama',
+            'librosa'
         ],
         extras_require={}
     )
