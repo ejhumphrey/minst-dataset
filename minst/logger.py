@@ -34,8 +34,8 @@ LOGGING_CONFIG = {
         'default': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'standard',
-            'filters': ['soxfilter']
+            'formatter': 'standard'
+            # 'filters': ['soxfilter']
         },
     },
     'loggers': {
