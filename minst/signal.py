@@ -131,10 +131,11 @@ def segment(audio_file, mode, db_delta_thresh=2.5, **kwargs):
     recs = []
     for time, idx in zip(onset_times, onset_idx):
         x_m = log_env_lpf[idx: idx + int(fs)]
-        rec = dict(time=time, env_max=x_m.max(),
-                   env_mean=x_m.mean(), env_std=x_m.std(),
-                   env_delta=x_m.max() - log_env_lpf.mean())
-        if rec['env_delta'] > db_delta_thresh:
-            recs += [rec]
+        if len(x_m) > 0:
+            rec = dict(time=time, env_max=x_m.max(),
+                       env_mean=x_m.mean(), env_std=x_m.std(),
+                       env_delta=x_m.max() - log_env_lpf.mean())
+            if rec['env_delta'] > db_delta_thresh:
+                recs += [rec]
 
     return pd.DataFrame.from_records(recs)
