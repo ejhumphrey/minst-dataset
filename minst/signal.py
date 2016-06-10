@@ -1,11 +1,14 @@
 import claudio
 import librosa
+import logging
 import numpy as np
 import pandas as pd
 import scipy.signal as sig
 
 import minst.hll as H
 import minst.utils as utils
+
+logger = logging.getLogger(__name__)
 
 
 def hll_onsets(filename, mfilt_len=51, threshold=0.5, wait=100):
