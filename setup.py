@@ -31,7 +31,10 @@ if __name__ == "__main__":
             'pytest',
             'colorama',
             'librosa',
-            'jsonschema'
+            'jsonschema',
+            'matplotlib',
+            'pandas',
+            'scipy'
         ],
         extras_require={}
     )
