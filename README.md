@@ -5,7 +5,7 @@ The MNIST of music instrument sounds.
 ## Installing Dependencies
 
 ```
-$ pip install -r requirements
+$ pip install -r requirements.txt
 $ pip install git+git://github.com/ejhumphrey/minst-dataset.git
 ```
 
@@ -44,7 +44,7 @@ Optionally, you can run a segmentation algorithm over the resulting index. This 
 
 ```
 $ python scripts/segment_collection.py uiowa_index.csv uiowa_onsets \
-    segment_index.csv --method onsets --num_cpus -1 --verbose 50
+    segment_index.csv --mode logcqt --num_cpus -1 --verbose 50
 ```
 
 Either way, you'll want to verify and correct (as needed) the estimated onsets. To do so, drop into the annotation routine by the following:
