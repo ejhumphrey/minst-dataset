@@ -27,12 +27,13 @@ LOGGING_CONFIG = {
 
     'formatters': {
         'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(filename)s %(funcName)s: %(message)s'
+            'format': '%(asctime)s {%(filename)s:%(name)s} [%(levelname)s] '
+                      '%(funcName)s(): %(message)s'
         },
     },
     'handlers': {
         'default': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'standard'
             # 'filters': ['soxfilter']
@@ -51,4 +52,6 @@ LOGGING_CONFIG = {
 def get_config(level):
     theconfig = LOGGING_CONFIG.copy()
     theconfig['loggers']['']['level'] = level
+
+    logging.getLogger('fileio.py').propagate = False
     return theconfig

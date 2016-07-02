@@ -6,6 +6,7 @@ Show how to connect to keypress events
 from __future__ import print_function
 import argparse
 import claudio
+import logging
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -15,7 +16,10 @@ import time
 matplotlib.use("TkAGG")
 
 import matplotlib.pyplot as plt
+import minst.logger
 import minst.signal as S
+
+logger = logging.getLogger(__name__)
 
 
 class OnsetCanvas(object):
@@ -43,7 +47,7 @@ class OnsetCanvas(object):
         self.refresh_xlim()
 
         title = '' if not title else title
-        title = "{}\nx: write and close / w: write / q: close"
+        title = "{}\nx: write and close / w: write / q: close".format(title)
         self.axes[0].set_title(title)
 
         self.set_onset_data(onset_data)
@@ -67,17 +71,30 @@ class OnsetCanvas(object):
     def save_onsets(self):
         self.onset_data.to_csv(self.output_file)
 
+    def clear_onsets(self):
+        self.onset_data = pd.DataFrame([])
+        for hnd in self.onset_handles:
+            hnd.remove()
+        self.onset_handles = []
+        plt.draw()
+
     def redraw_onset_data(self):
-        print("redrawing onsets")
+        logger.debug("redrawing onsets")
         if not self.has_onsets:
-            print("Doesn't have any: {}".format(self.onset_data))
+            logger.debug("Doesn't have any: {}".format(self.onset_data))
             return
+
+        logger.debug("\nOnsets to draw: {}\nHandles: {}".format(
+            self.onset_data, self.onset_handles))
 
         for hnd in self.onset_handles:
             hnd.remove()
 
+        logger.debug("Plotting the following onsets: {}".format(
+            self.onset_data))
+
         self.onset_handles = []
-        print("drawing lines : {}".format(self.onset_times))
+        logger.debug("drawing lines : {}".format(self.onset_times))
         self.onset_handles += [self.axes[0].vlines(
             self.onset_data.time, ymin=-1.05*self.x_max,
             ymax=1.05*self.x_max, color='k', alpha=0.5, linewidth=3)]
@@ -113,7 +130,7 @@ class OnsetCanvas(object):
             w : Write current onset data.
             q : Close this canvas without saving.
             spacebar : Toggle a marker at the current mouse position.
-
+            c : Clear all current onsets
         """
         print('Received: ', event.key)
         sys.stdout.flush()
@@ -123,7 +140,7 @@ class OnsetCanvas(object):
             plt.close()
             self._alive = False
 
-        if event.key == 'w':
+        elif event.key == 'w':
             print("Saving to: {}".format(self.output_file))
             self.save_onsets()
 
@@ -131,6 +148,10 @@ class OnsetCanvas(object):
             print("Closing")
             plt.close()
             self._alive = False
+
+        elif event.key == 'c':
+            print("Clearing existing markers")
+            self.clear_onsets()
 
         elif event.key == ' ':
             x, y = event.xdata, event.ydata
@@ -151,9 +172,17 @@ def annotate_one(audio_file, onset_file, output_file=None, title=None):
     if output_file is None:
         output_file = onset_file.replace(".csv", "-fix.csv")
 
+    logger.info("Working on audio: {}".format(audio_file))
+    logger.info("Onset_file: {}".format(onset_file))
+    logger.info("Title: {}".format(title))
+
     canvas = OnsetCanvas(audio_file, output_file, pd.read_csv(onset_file),
                          title=title)
+    logger.info("Writing to: {}".format(output_file))
     plt.show(block=True)
+
+    # Should we continue?
+    return canvas.alive
 
 
 if __name__ == '__main__':
@@ -164,12 +193,22 @@ if __name__ == '__main__':
         metavar="index_file", type=str,
         help=".")
     parser.add_argument(
-        "--verbose",
-        metavar="verbose", type=int, default=0,
-        help="Number of CPUs to use; by default, uses all.")
+        "--verbose", action='store_true', help="Set verbosity")
 
     args = parser.parse_args()
+    level = 'INFO' if not args.verbose else 'DEBUG'
+    logging.config.dictConfig(minst.logger.get_config(level))
+
     dframe = pd.read_csv(args.index_file)
 
     for idx, row in dframe.iterrows():
-        annotate_one(row.audio_file, row.onset_file, title=idx)
+        logger.debug("Annotating {}".format(row))
+        # TODO(cbj): There should be a better way to handle this
+        #  ... and/or a better naming scheme for the columns
+        onsets = row.get('onset_file', row.get('logcqt', None))
+        if onsets:
+            is_alive = annotate_one(row.audio_file, onsets, title=idx)
+
+            if not is_alive:
+                logger.info("Application Exiting...")
+                break
