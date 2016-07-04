@@ -214,7 +214,6 @@ class OnsetCanvas(object):
             logger.info("Closing")
             plt.close()
             self._alive = False
-            self._mark_for_later = True
 
         elif event.key == 'c':
             logger.info("Clearing existing markers")
@@ -247,10 +246,40 @@ class OnsetCanvas(object):
         elif event.key == '1':
             # Reset onsets with "envelope_onsets"
             logger.debug("Getting envelope_onsets()")
-            onsets = S.envelope_onsets(self.x, self.fs)
+            onsets = S.envelope_onsets(self.x, self.fs, wait=int(self.fs*.001))
             self.set_onset_data(pd.DataFrame(dict(time=onsets)))
 
         elif event.key == '2':
+            # Reset onsets with "envelope_onsets"
+            logger.debug("Getting envelope_onsets()")
+            onsets = S.envelope_onsets(self.x, self.fs, wait=int(self.fs*.005))
+            self.set_onset_data(pd.DataFrame(dict(time=onsets)))
+
+        elif event.key == '3':
+            # Reset onsets with "envelope_onsets"
+            logger.debug("Getting envelope_onsets()")
+            onsets = S.envelope_onsets(self.x, self.fs, wait=int(self.fs*.01))
+            self.set_onset_data(pd.DataFrame(dict(time=onsets)))
+
+        elif event.key == '4':
+            # Reset onsets with "envelope_onsets"
+            logger.debug("Getting envelope_onsets()")
+            onsets = S.envelope_onsets(self.x, self.fs, wait=int(self.fs*.05))
+            self.set_onset_data(pd.DataFrame(dict(time=onsets)))
+
+        elif event.key == '5':
+            # Reset onsets with "envelope_onsets"
+            logger.debug("Getting envelope_onsets()")
+            onsets = S.envelope_onsets(self.x, self.fs, wait=int(self.fs*.075))
+            self.set_onset_data(pd.DataFrame(dict(time=onsets)))
+
+        elif event.key == '6':
+            # Reset onsets with "envelope_onsets"
+            logger.debug("Getting envelope_onsets()")
+            onsets = S.envelope_onsets(self.x, self.fs, wait=int(self.fs*.1))
+            self.set_onset_data(pd.DataFrame(dict(time=onsets)))
+
+        elif event.key == '7':
             # Reset onsets with "logcqt_onsets"
             logger.debug("Getting logcqt_onsets()")
             onsets = S.logcqt_onsets(self.x, self.fs)
@@ -273,11 +302,14 @@ class OnsetCanvas(object):
             self.shift_onsets(.1)
 
 
-def annotate_one(audio_file, onset_file, output_file=None, title=None):
+def annotate_one(audio_file, onset_file, output_file=None, title=None,
+                 skip_existing=False):
     if output_file is None:
         output_file = onset_file.replace(".csv", "-fix.csv")
 
     if os.path.exists(output_file):
+        if skip_existing:
+            return False, False
         onset_file = output_file
 
     logger.info("Working on audio: {}".format(audio_file))
@@ -285,7 +317,8 @@ def annotate_one(audio_file, onset_file, output_file=None, title=None):
     logger.info("Title: {}".format(title))
     t0 = time.time()
 
-    canvas = OnsetCanvas(audio_file, output_file, pd.read_csv(onset_file),
+    onsets = pd.read_csv(onset_file) if onset_file else pd.DataFrame([])
+    canvas = OnsetCanvas(audio_file, output_file, onsets,
                          title=title)
     logger.info("Writing to: {}".format(output_file))
     plt.show(block=True)
@@ -309,36 +342,49 @@ if __name__ == '__main__':
         '--startat', type=int)
     parser.add_argument(
         '--marked_file', default='marked_for_later_idx.txt')
+    parser.add_argument(
+        '--skip_existing', action='store_true',
+        help='If this file has already been edited, skip it.')
+    parser.add_argument(
+        '--ignore_no_instrument',
+        action='store_true',
+        help="Don't look at files that don't have an assciated instrument "
+             "in the index_file")
 
     args = parser.parse_args()
     level = 'INFO' if not args.verbose else 'DEBUG'
     logging.config.dictConfig(minst.logger.get_config(level))
 
     dframe = pd.read_csv(args.index_file)
+    if args.ignore_no_instrument:
+        dframe = dframe.loc[dframe['instrument'].dropna().index]
 
     marked_idxs = []
     completed_idxs = []
 
+    count = 0
     for idx, row in dframe.iterrows():
         if args.startat and idx < args.startat:
             continue
 
-        logger.info("Annotating {} [idx={}]".format(row, idx))
+        logger.info("Annotating:\n{} [idx={}]".format(row, idx))
         # TODO(cbj): There should be a better way to handle this
         #  ... and/or a better naming scheme for the columns
         onsets = row.get('onset_file', row.get('logcqt', None))
-        if onsets:
-            quit, marked = annotate_one(row.audio_file, onsets,
-                                        title="{} of {}".format(
-                                            idx, len(dframe)))
+        quit, marked = annotate_one(row.audio_file, onsets,
+                                    skip_existing=args.skip_existing,
+                                    title="{} of {} | instrument: {}"
+                                    .format(count, len(dframe),
+                                            row['instrument']))
 
-            if quit:
-                logger.info("Application Exiting...")
-                break
-            if marked:
-                marked_idxs.append(idx)
-            else:
-                completed_idxs.append(idx)
+        if quit:
+            logger.info("Application Exiting...")
+            break
+        if marked:
+            marked_idxs.append(idx)
+        else:
+            completed_idxs.append(idx)
+        count += 1
 
     print("The following indexes were marked to return to:")
     pprint.pprint(marked_idxs)
@@ -347,5 +393,7 @@ if __name__ == '__main__':
         for index in marked_idxs:
             fh.write("{}\n".format(index))
 
-    print("In this session, you completed {} files".format(len(completed_idxs))
-    print("In this session, you marked {} files".format(len(marked_idxs)))
+    print("In this session, you completed {} files".format(
+        len(completed_idxs)))
+    print("In this session, you marked {} files".format(
+        len(marked_idxs)))
