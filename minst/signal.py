@@ -71,7 +71,7 @@ def logcqt_onsets(x, fs, pre_max=0, post_max=1, pre_avg=0,
     return librosa.frames_to_time(peak_idx, hop_length=hop_length)
 
 
-def envelope_onsets(x, fs):
+def envelope_onsets(x, fs, wait=100):
     """
     Parameters
     ----------
@@ -99,7 +99,7 @@ def envelope_onsets(x, fs):
     onsets_pos = onsets_forward * (onsets_forward > 0)
     peak_idx = librosa.util.peak_pick(onsets_pos,
                                       pre_max=500, post_max=500, pre_avg=10,
-                                      post_avg=10, delta=0.025, wait=100)
+                                      post_avg=10, delta=0.025, wait=wait)
     return librosa.frames_to_time(peak_idx, hop_length=n_hop)
 
 
