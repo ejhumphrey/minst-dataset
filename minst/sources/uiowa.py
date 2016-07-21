@@ -130,8 +130,6 @@ def collect(base_dir, depth=6, fext="*.aif*"):
             instrument, dynamic, notevalue = parse(audio_file_path)
             uid = utils.generate_id(NAME, audio_file_path.split(base_dir)[-1])
             onsets = find_onset_file_from_uid(uid)
-            if onsets is not None:
-                import pdb; pdb.set_trace()
             indexes.append(uid)
             records.append(
                 dict(audio_file=audio_file_path,
@@ -140,7 +138,6 @@ def collect(base_dir, depth=6, fext="*.aif*"):
                      dynamic=dynamic,
                      note=notevalue,
                      onsets_file=onsets))
-    import pdb; pdb.set_trace()
 
     logger.info("Found {} files from {}.".format(len(records), NAME))
 
