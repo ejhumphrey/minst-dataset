@@ -35,8 +35,21 @@ def hll_onsets(filename, mfilt_len=51, threshold=0.5, wait=100):
     return onset_times  # , novelty, onsets, voicings
 
 
+def logcqt(x, fs, hop_length=1024):
+    """
+    """
+    x_noise = x + np.random.normal(scale=10.**-3, size=x.shape)
+    cqt = librosa.cqt(x_noise.flatten(),
+                      sr=fs, hop_length=hop_length, fmin=27.5,
+                      n_bins=24 * 8, bins_per_octave=24, tuning=0,
+                      sparsity=0, real=False, norm=1)
+    cqt = np.abs(cqt)
+    lcqt = np.log1p(5000 * cqt)
+    return lcqt
+
+
 def logcqt_onsets(x, fs, pre_max=0, post_max=1, pre_avg=0,
-                  post_avg=1, delta=0.05, wait=50):
+                  post_avg=1, delta=0.05, wait=50, hop_length=1024):
     """
     Parameters
     ----------
@@ -54,15 +67,7 @@ def logcqt_onsets(x, fs, pre_max=0, post_max=1, pre_avg=0,
     onsets : np.ndarray, ndim=1
         Times in seconds for splitting.
     """
-    hop_length = 1024
-    x_noise = x + np.random.normal(scale=10.**-3, size=x.shape)
-    cqt = librosa.cqt(x_noise.flatten(),
-                      sr=fs, hop_length=hop_length, fmin=27.5,
-                      n_bins=24*8, bins_per_octave=24, tuning=0,
-                      sparsity=0, real=False, norm=1)
-    cqt = np.abs(cqt)
-    lcqt = np.log1p(5000*cqt)
-
+    lcqt = logcqt(x, fs, hop_length)
     c_n = utils.canny(51, 3.5, 1)
     onset_strength = sig.lfilter(c_n, np.ones(1), lcqt, axis=1).mean(axis=0)
 
@@ -71,7 +76,7 @@ def logcqt_onsets(x, fs, pre_max=0, post_max=1, pre_avg=0,
     return librosa.frames_to_time(peak_idx, hop_length=hop_length)
 
 
-def envelope_onsets(x, fs):
+def envelope_onsets(x, fs, wait=100):
     """
     Parameters
     ----------
@@ -84,7 +89,7 @@ def envelope_onsets(x, fs):
         Times in seconds for splitting.
     """
 
-    log_env = 10*np.log10(10.**-4.5 + np.power(x.flatten()[:], 2.0))
+    log_env = 10 * np.log10(10. ** -4.5 + np.power(x.flatten()[:], 2.0))
     w_n = np.hanning(100)
     w_n /= w_n.sum()
     log_env_lpf = sig.filtfilt(w_n, np.ones(1), log_env)
@@ -99,7 +104,7 @@ def envelope_onsets(x, fs):
     onsets_pos = onsets_forward * (onsets_forward > 0)
     peak_idx = librosa.util.peak_pick(onsets_pos,
                                       pre_max=500, post_max=500, pre_avg=10,
-                                      post_avg=10, delta=0.025, wait=100)
+                                      post_avg=10, delta=0.025, wait=wait)
     return librosa.frames_to_time(peak_idx, hop_length=n_hop)
 
 

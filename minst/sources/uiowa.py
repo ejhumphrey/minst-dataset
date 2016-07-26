@@ -9,6 +9,9 @@ import minst.utils as utils
 logger = logging.getLogger(__name__)
 
 NAME = 'uiowa'
+UIOWA_ONSET_DIR = os.path.join(os.path.dirname(__file__),
+                               os.pardir, os.pardir,
+                               "data", "onsets", NAME)
 
 
 def parse(filename):
@@ -80,6 +83,22 @@ def num_notes_from_filename(filename):
     return result
 
 
+def find_onset_file_from_uid(uid, onset_dir=UIOWA_ONSET_DIR):
+    """Find an onsetfile of the form [uid].csv in the onset_dir.
+
+    Parameters
+    ----------
+    uid : str
+        UID as generated in collect()
+
+    onset_dir : str
+        Path to the onsets.
+    """
+    onset_file = "{}.csv".format(uid)
+    onset_path = os.path.abspath(os.path.join(onset_dir, onset_file))
+    return onset_path if os.path.exists(onset_path) else None
+
+
 def collect(base_dir, depth=6, fext="*.aif*"):
     """Convert a base directory of UIowa files to a pandas dataframe.
 
@@ -110,13 +129,15 @@ def collect(base_dir, depth=6, fext="*.aif*"):
         for audio_file_path in glob.glob(glbpath):
             instrument, dynamic, notevalue = parse(audio_file_path)
             uid = utils.generate_id(NAME, audio_file_path.split(base_dir)[-1])
+            onsets = find_onset_file_from_uid(uid)
             indexes.append(uid)
             records.append(
                 dict(audio_file=audio_file_path,
                      dataset=NAME,
                      instrument=instrument,
                      dynamic=dynamic,
-                     note=notevalue))
+                     note=notevalue,
+                     onsets_file=onsets))
 
     logger.info("Found {} files from {}.".format(len(records), NAME))
 
