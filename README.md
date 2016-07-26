@@ -5,8 +5,12 @@ The MNIST of music instrument sounds.
 ## Installing Dependencies
 
 ```
-$ pip install -r requirements.txt
 $ pip install git+git://github.com/ejhumphrey/minst-dataset.git
+$ cd minst-dataset
+
+$ pip install -r requirements.txt
+OR
+$ make deps
 ```
 
 ## Building the dataset from scratch
