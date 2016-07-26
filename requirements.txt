@@ -1,2 +1,3 @@
+boltons
 git+git://github.com/ejhumphrey/claudio.git
 docopt

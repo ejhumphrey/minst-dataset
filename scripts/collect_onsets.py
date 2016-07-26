@@ -7,9 +7,9 @@ DISCLAIMER (CBJ; July 20, 2016): this is set up to work nicely with RWC,
  work for you. Hopefully you should just be able to use the outputs.
 
 Usage:
-collect_onsets.py <segment_index> <output_dir>
-collect_onsets.py <segment_index> <output_dir> --dry-run
-collect_onsets.py -h | --help
+ collect_onsets.py <segment_index> <output_dir>
+ collect_onsets.py <segment_index> <output_dir> --dry-run
+ collect_onsets.py -h | --help
 
 Arguments:
  segment_index   Path to the segment_index.csv, same as used by annotate.py.
