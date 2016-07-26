@@ -55,6 +55,12 @@ phil_notes.csv
 rwc_notes.csv
 ```
 
+We recommend when loading these into pandas that you use set index_col=[0, 1], since the first two columns are part of the multi_index, where column 0 is the original file hash, and column 1 is the note index:
+
+```python
+df = pd.read_csv('rwc_notes.csv', index_col=[0,1])
+```
+
 ## Appendix: Segmenting the audio
 
 This repository contains some generated / annotated onsets for the instruments we have selected in the taxonomy. If you wish to annotate more, however, you will need to do the following:
