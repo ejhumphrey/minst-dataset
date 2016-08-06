@@ -32,14 +32,15 @@ The goal of this project is to consolidate various disparate solo instrument col
 
 ### Get the data
 
-This project uses three different solo instrument datasets.
+This project uses four different solo instrument datasets.
 - [University of Iowa - MIS](http://theremin.music.uiowa.edu/MIS.html)
 - [Philharmonia](http://www.philharmonia.co.uk/explore/make_music)
 - [RWC - Instruments](https://staff.aist.go.jp/m.goto/RWC-MDB/rwc-mdb-i.html)
+- [Good Sounds](http://mtg.upf.edu/download/datasets/good-sounds)
 
-We provide "manifest" files with which one can download the first two collections. For access to the third (RWC), you should contact the kind folks at AIST.
+We provide "manifest" files with which one can download the first two collections. For access to the third (RWC), you should contact the kind folks at AIST. Access to Good-Sounds is public, but requires that you fill out a form first.
 
-To download the data, you can invoke the following from your cloned repository:
+To download the available data, you can invoke the following from your cloned repository:
 
 ```
 $ make download
@@ -68,6 +69,7 @@ Afterwards, the annotated notes should be available in these files:
 uiowa_notes.csv
 phil_notes.csv
 rwc_notes.csv
+goodsounds_notes.csv
 ```
 
 We recommend when loading these into pandas that you use set index_col=[0, 1], since the first two columns are part of the multi_index, where column 0 is the original file hash, and column 1 is the note index:
