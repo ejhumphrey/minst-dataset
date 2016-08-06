@@ -99,6 +99,17 @@ def segment_many(index, audio_files, mode, output_directory,
                 for idx, afile in zip(index, audio_files))
 
 
+def main(index_file, output_dir, output_index, mode, num_cpus=1, verbose=0):
+    dframe = pd.read_csv(index_file, index_col=[0])
+    outputs = segment_many(dframe.index.tolist(), dframe.audio_file, mode,
+                           output_dir, num_cpus=num_cpus,
+                           verbose=verbose)
+    dframe['onsets_file'] = outputs
+    output_file = os.path.join(output_dir, output_index)
+    dframe.to_csv(output_file)
+    return os.path.exists(output_file)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -131,11 +142,6 @@ if __name__ == "__main__":
     level = 'INFO' if args.verbose <= 20 else 'DEBUG'
     logging.config.dictConfig(minst.logger.get_config(level))
 
-    dframe = pd.read_csv(args.index_file, index_col=[0])
-    outputs = segment_many(dframe.index.tolist(), dframe.audio_file, args.mode,
-                           args.output_dir, num_cpus=args.num_cpus,
-                           verbose=args.verbose)
-    dframe[args.mode] = outputs
-    output_file = os.path.join(args.output_dir, args.output_index)
-    dframe.to_csv(output_file)
-    sys.exit(0 if os.path.exists(output_file) else 1)
+    success = main(args.index_file, args.output_dir, args.output_index,
+                   args.mode, args.num_cpus, args.verbose)
+    sys.exit(0 if success else 1)

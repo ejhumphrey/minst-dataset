@@ -11,7 +11,7 @@ def build_index(dataset, base_directory, output_file, backup_index=None,
     df = minst.sources.SOURCES[dataset].collect(base_directory)
     if strict_taxonomy:
         df_norm = minst.taxonomy.normalize_instrument_names(df)
-        df = df.loc[df_norm['instrument'].dropna().index]
+        df = df.loc[df_norm.instrument.dropna().index]
 
     df.to_csv(output_file)
     if backup_index is not None:

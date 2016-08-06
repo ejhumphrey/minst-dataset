@@ -40,8 +40,8 @@ with open(RWC_INSTRUMENT_MAP_PATH, 'r') as fh:
 
 NAME = "rwc"
 RWC_ONSET_DIR = os.path.join(os.path.dirname(__file__),
-                               os.pardir, os.pardir,
-                               "data", "onsets", NAME)
+                             os.pardir, os.pardir,
+                             "data", "onsets", NAME)
 
 
 def instrument_code_to_name(rwc_instrument_code):
@@ -86,7 +86,7 @@ def parse(filename):
     return instrument_name, style_code, dynamic_code
 
 
-def find_onset_file_from_uid(uid, onset_dir=RWC_ONSET_DIR):
+def find_onset_file_from_uid(uid, onset_dir):
     """Find an onsetfile of the form [uid].csv in the onset_dir.
 
     Parameters
@@ -102,7 +102,7 @@ def find_onset_file_from_uid(uid, onset_dir=RWC_ONSET_DIR):
     return onset_path if os.path.exists(onset_path) else None
 
 
-def collect(base_dir, fext="*.flac"):
+def collect(base_dir, fext="*.flac", onset_dir=RWC_ONSET_DIR):
     """Convert a base directory of RWC files to a pandas dataframe.
 
     Parameters
@@ -132,7 +132,7 @@ def collect(base_dir, fext="*.flac"):
     for audio_file_path in glob.glob(os.path.join(base_dir, fmt)):
         instrument_name, style_code, dynamic_code = parse(audio_file_path)
         uid = utils.generate_id(NAME, utils.filebase(audio_file_path))
-        onsets = find_onset_file_from_uid(uid)
+        onsets = find_onset_file_from_uid(uid, onset_dir)
         indexes.append(uid)
         records.append(
             dict(audio_file=audio_file_path,

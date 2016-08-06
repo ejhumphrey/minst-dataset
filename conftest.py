@@ -14,18 +14,23 @@ def data_root():
 
 
 @pytest.fixture()
-def uiowa_root(data_root):
-    return os.path.join(data_root, RAW, 'dummy_uiowa')
+def raw_data_root(data_root):
+    return os.path.join(data_root, RAW)
 
 
 @pytest.fixture()
-def philz_root(data_root):
-    return os.path.join(data_root, RAW, 'dummy_philharmonia')
+def uiowa_root(raw_data_root):
+    return os.path.join(raw_data_root, 'dummy_uiowa')
 
 
 @pytest.fixture()
-def rwc_root(data_root):
-    return os.path.join(data_root, RAW, 'dummy_rwc')
+def philz_root(raw_data_root):
+    return os.path.join(raw_data_root, 'dummy_philharmonia')
+
+
+@pytest.fixture()
+def rwc_root(raw_data_root):
+    return os.path.join(raw_data_root, 'dummy_rwc')
 
 
 @pytest.fixture()
