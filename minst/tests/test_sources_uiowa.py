@@ -1,5 +1,4 @@
 import pytest
-import os
 
 import helpers
 import minst.sources.uiowa as uiowa
@@ -33,10 +32,9 @@ def test_uiowa_num_notes_from_filename():
         yield helpers.__test, result, expected
 
 
-def test_uiowa_collect():
+def test_uiowa_collect(uiowa_root):
     """Test that an input folder with files in uiowa format is correctly
     converted to a dataframe."""
-    uiowa_dir = os.path.join(os.path.dirname(__file__), 'dummy_uiowa')
-    uiowa_df = uiowa.collect(uiowa_dir)
-    yield helpers.__test_df_has_data, uiowa_df
-    yield helpers.__test_pd_output, uiowa_df, uiowa.NAME
+    uiowa_df = uiowa.collect(uiowa_root)
+    helpers.__test_df_has_data(uiowa_df)
+    helpers.__test_pd_output(uiowa_df, uiowa.NAME)

@@ -1,34 +1,19 @@
 import pytest
+
 import glob
 import logging.config
 import os
-import shutil
-import tempfile
 
 import minst.logger
 import minst.utils
 
 logging.config.dictConfig(minst.logger.get_config('DEBUG'))
-DIRNAME = os.path.dirname(__file__)
 
 
-@pytest.fixture()
-def workspace(request):
-    test_workspace = tempfile.mkdtemp()
-
-    def fin():
-        if os.path.exists(test_workspace):
-            shutil.rmtree(test_workspace)
-
-    request.addfinalizer(fin)
-
-    return test_workspace
-
-
-def collect_files(exts):
+def collect_files(exts, data, depth=8):
     afiles = []
-    for n in range(7):
-        fmt = os.path.join(DIRNAME, "/".join(["*"] * n), "*.{}*")
+    for n in range(depth):
+        fmt = os.path.join(data, "/".join(["*"] * n), "*.{}*")
         for ext in exts:
             afiles += glob.glob(fmt.format(ext))
 
@@ -67,29 +52,29 @@ def test_get_note_distance():
         yield __test, result, expected
 
 
-def test_check_audio_file():
-    for af in collect_files(['mp3', 'aif', 'aiff']):
-        yield __test, minst.utils.check_audio_file(af), (True, None)
+def test_check_audio_file(data_root):
+    for af in collect_files(['mp3', 'aif', 'aiff'], data_root):
+        __test(minst.utils.check_audio_file(af), (True, None))
 
-    for af in collect_files(['zip']):
-        yield __test, minst.utils.check_audio_file(af)[0], False
+    for af in collect_files(['zip'], data_root):
+        __test(minst.utils.check_audio_file(af)[0], False)
 
 
-def test_check_many_audio_files():
-    afiles = collect_files(['mp3', 'aif', 'aiff'])
+def test_check_many_audio_files(data_root):
+    afiles = collect_files(['mp3', 'aif', 'aiff'], data_root)
     for sterr in minst.utils.check_many_audio_files(afiles):
-        yield __test, sterr, (True, None)
+        __test(sterr, (True, None))
 
-    other_files = collect_files(['zip'])
+    other_files = collect_files(['zip'], data_root)
     for sterr in minst.utils.check_many_audio_files(other_files):
-        yield __test, sterr[0], False
+        __test(sterr[0], False)
 
 
-def test_trim(workspace):
-    afiles = collect_files(['mp3', 'aif', 'aiff'])
+def test_trim(workspace, data_root):
+    afiles = collect_files(['mp3', 'aif', 'aiff'], data_root)
     ofile = minst.utils.trim(afiles[0], workspace, 0.5)
     assert ofile
 
-    other_files = collect_files(['zip'])
+    other_files = collect_files(['zip'], data_root)
     ofile = minst.utils.trim(other_files[0], workspace, 0.5)
     assert ofile is None
