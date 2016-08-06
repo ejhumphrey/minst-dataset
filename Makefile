@@ -61,7 +61,7 @@ $(RWC_NOTES): $(RWC_INDEX)
 
 # pass_thru because good-sounds already has notes
 $(GOODSOUNDS_NOTES): $(GOODSOUNDS_INDEX)
-	$(PYTHON) scripts/segment_audio.py $(GOODSOUNDS_INDEX) $(GOODSOUDNS_INDEX) --pass_thru
+	$(PYTHON) scripts/segment_audio.py $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES) --pass_thru
 
 
 uiowa: $(UIOWA_INDEX) $(UIOWA_NOTES)
