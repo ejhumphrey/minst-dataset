@@ -1,5 +1,7 @@
 # minst-dataset
 
+[![Build Status](https://travis-ci.org/ejhumphrey/minst-dataset.svg?branch=master)](https://travis-ci.org/ejhumphrey/minst-dataset)
+
 The MNIST of music instrument sounds.
 
 ## Installing Dependencies

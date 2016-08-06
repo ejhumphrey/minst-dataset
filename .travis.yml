@@ -19,17 +19,18 @@ python:
     - "3.4"
     - "3.5"
 
+before_install:
+    - bash .travis_dependencies.sh
+    - export PATH="$HOME/env/miniconda$TRAVIS_PYTHON_VERSION/bin:$PATH";
+    - hash -r
+    - source activate test-environment
+
 install:
     - pip install coveralls
-    - pip install -r requirements.txt
-    - pip install -e ./
+    - pip install -e .
 
 script:
-    - python --version
-    - py.test -v --cov=minst ./minst
-    - pushd scripts
-    - py.test -v .
-    - popd scripts
+    - ./run_tests.sh
 
 after_success:
     - coveralls
