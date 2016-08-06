@@ -35,10 +35,7 @@ def collect(base_dir):
     Parameters
     ----------
     base_dir : str
-        Full path to the base RWC directory.
-
-    articulations : list of str
-        Articulations over which to filter the data.
+        Full path to the base Good-Sounds directory.
 
     Returns
     -------
