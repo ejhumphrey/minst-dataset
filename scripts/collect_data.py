@@ -34,7 +34,7 @@ if __name__ == "__main__":
         metavar="index_file", type=str,
         help="A dframe in CSV format.")
     parser.add_argument(
-        "--backup_index",
+        "--backup_index", default=None,
         metavar="backup_index", type=str,
         help="A backup mapping between file indexes and source audio names.")
     parser.add_argument(
@@ -43,5 +43,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     success = build_index(args.dataset, args.base_dir,
-                          args.index_file, args.strict_taxonomy)
+                          args.index_file, args.backup_index,
+                          args.strict_taxonomy)
     sys.exit(0 if success else 1)
