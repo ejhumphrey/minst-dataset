@@ -1,13 +1,16 @@
 import pytest
 import glob
+import logging.config
 import os
 import shutil
 import tempfile
 
+import minst.logger
 import minst.utils
 
-
+logging.config.dictConfig(minst.logger.get_config('DEBUG'))
 DIRNAME = os.path.dirname(__file__)
+
 
 @pytest.fixture()
 def workspace(request):
@@ -25,7 +28,7 @@ def workspace(request):
 def collect_files(exts):
     afiles = []
     for n in range(7):
-        fmt = os.path.join(DIRNAME, "/".join(["*"]*n), "*.{}*")
+        fmt = os.path.join(DIRNAME, "/".join(["*"] * n), "*.{}*")
         for ext in exts:
             afiles += glob.glob(fmt.format(ext))
 
@@ -37,17 +40,18 @@ def __test(value, expected):
 
 
 def test_generate_id():
-    def __test_hash(prefix, result, hlen):
+    def __test_hash(prefix, result, hlen, exp):
         assert result.startswith(prefix)
         assert len(result[len(prefix):]) == hlen
+        assert result == exp
 
-    tests = [("A", "foobar.mp3", 3),
-             ("BC", "testwhat.foo", 8),
-             ("TR", "i'matestfile.aiff", 12)]
+    tests = [("A", "foobar.mp3", 3, 'A6fb'),
+             ("BC", "testwhat.foo", 8, 'BC87188425'),
+             ("TR", "i'matestfile.aiff", 12, 'TR35a75e8d3dcb')]
 
-    for prefix, name, hlen in tests:
+    for prefix, name, hlen, exp in tests:
         result = minst.utils.generate_id(prefix, name, hlen)
-        yield __test_hash, prefix, result, hlen
+        yield __test_hash, prefix, result, hlen, exp
 
 
 def test_get_note_distance():
