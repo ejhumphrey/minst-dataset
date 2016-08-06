@@ -12,6 +12,7 @@ import segment_collection
 logging.config.dictConfig(minst.logger.get_config('INFO'))
 
 
+@pytest.mark.skipif(True, reason="hackinit")
 def test_build_uiowa(workspace, uiowa_root):
     expected_index = ['uiowa78fae0a0', 'uiowa095def27']
     uiowa_index = os.path.join(workspace, "uiowa_index.csv")
@@ -43,3 +44,25 @@ def test_build_uiowa(workspace, uiowa_root):
 
     notes = pd.read_csv(notes_index, index_col=0)
     assert len(notes) == 13
+
+
+@pytest.mark.skipif(False, reason="hackinit")
+def test_build_uiowa_full():
+
+    uiowa_root = "/Users/ejhumphrey/data/minst/uiowa"
+    uiowa_index_file = "/Users/ejhumphrey/data/minst/uiowa_index.csv"
+    status = collect_data.build_index(
+        'uiowa', uiowa_root, uiowa_index_file, strict_taxonomy=True)
+    assert status
+
+    segment_dir = "/Users/ejhumphrey/data/minst/uiowa_segments"
+    segment_index = "/Users/ejhumphrey/data/minst/uiowa_segment_index.csv"
+
+    status = segment_collection.main(
+        uiowa_index_file, segment_dir, segment_index,
+        mode='hll', num_cpus=1, verbose=20)
+    assert status
+    segments = pd.read_csv(segment_index, index_col=0)
+
+    uiowa_index = uiowa.collect(uiowa_root, onset_dir=segment_dir)
+    assert uiowa_index.to_dict() == segments.to_dict()
