@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    level = 'INFO' if args.verbose == 0 else 'DEBUG'
+    level = 'INFO' if args.verbose <= 20 else 'DEBUG'
     logging.config.dictConfig(minst.logger.get_config(level))
 
     dframe = pd.read_csv(args.index_file)
