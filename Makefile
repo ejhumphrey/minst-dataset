@@ -48,19 +48,20 @@ $(RWC_INDEX):
 $(GOODSOUNDS_INDEX):
 	$(PYTHON) scripts/collect_data.py goodsounds $(GOODSOUNDS_DIR) $(GOODSOUNDS_INDEX) --strict_taxonomy
 
+
 $(UIOWA_NOTES): $(UIOWA_INDEX)
 	$(PYTHON) scripts/segment_audio.py $(UIOWA_INDEX) $(UIOWA_NOTES) $(SEGMENTS_DATA_DIR)
 
-# PHIL doesn't have segments. This just creates a notes file. Which,
-#  lets be real we might as well just copy.
+# pass_thru because phil already has notes
 $(PHIL_NOTES): $(PHIL_INDEX)
-	$(PYTHON) scripts/segment_audio.py $(PHIL_INDEX) $(PHIL_NOTES) $(SEGMENTS_DATA_DIR) --pass_thru
+	$(PYTHON) scripts/segment_audio.py $(PHIL_INDEX) $(PHIL_NOTES) --pass_thru
 
 $(RWC_NOTES): $(RWC_INDEX)
 	$(PYTHON) scripts/segment_audio.py $(RWC_INDEX) $(RWC_NOTES) $(SEGMENTS_DATA_DIR)
 
+# pass_thru because good-sounds already has notes
 $(GOODSOUNDS_NOTES): $(GOODSOUNDS_INDEX)
-	cp $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES)
+	$(PYTHON) scripts/segment_audio.py $(GOODSOUNDS_INDEX) $(GOODSOUDNS_INDEX) --pass_thru
 
 
 uiowa: $(UIOWA_INDEX) $(UIOWA_NOTES)
