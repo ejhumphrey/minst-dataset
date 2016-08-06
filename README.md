@@ -15,6 +15,13 @@ OR
 $ make deps
 ```
 
+## Testing your Install / Setup
+
+This project ships with just enough data to test itself.
+```
+$ make test
+```
+
 ## Building the dataset from scratch
 
 ### Get the data

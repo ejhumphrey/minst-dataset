@@ -62,3 +62,4 @@ build: uiowa philharmonia rwc
 
 
 test:
+	./run_tests.sh
