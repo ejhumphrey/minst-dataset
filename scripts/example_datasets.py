@@ -65,7 +65,7 @@ def copy_example_datasets(destination_dir, source_indeces, n_files):
 
                 indexes.append(idx)
                 values.append(
-                    [dataset, dest_filename, row['instrument']])
+                    [row['dataset'], dest_filename, row['instrument']])
     result_df = pd.DataFrame(values,
                              columns=['dataset', 'note_file', 'instrument'],
                              index=indexes)
