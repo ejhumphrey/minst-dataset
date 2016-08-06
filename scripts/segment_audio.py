@@ -20,6 +20,7 @@ Options:
  -v, --verbose   Increase verbosity level.
  --pass_thru     Pass through option writes a note_index with the same
                  information as the segment_index without extracting notes.
+ --limit=N_FILES  Limit to procesing N_FILES for testing.
 """
 from __future__ import print_function
 import boltons.fileutils
@@ -82,7 +83,7 @@ def segment_audio_from_onsets(audio_file, onset_file, note_audio_dir):
 
 
 def segment_audio(segment_index_file, note_index_file, note_audio_dir,
-                  pass_through=False):
+                  pass_through=False, limit_n_files=None):
     """
     Parameters
     ----------
@@ -142,6 +143,9 @@ def segment_audio(segment_index_file, note_index_file, note_audio_dir,
             sys.stdout.flush()
         count += 1
 
+        if limit_n_files and count >= limit_n_files:
+            break
+
     if PRINT_PROGRESS:
         print()
 
@@ -162,6 +166,7 @@ if __name__ == "__main__":
     segment_audio(arguments['<segment_index>'],
                   arguments['<note_index>'],
                   arguments['<note_audio_dir>'],
-                  arguments['--pass_thru'])
+                  arguments['--pass_thru'],
+                  int(arguments['--limit']) if arguments['--limit'] else None)
     t_end = time.time()
     print("segment_audio completed in: {}s".format(t_end - t0))
