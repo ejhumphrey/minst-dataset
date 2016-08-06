@@ -116,38 +116,44 @@ def segment_audio(segment_index_file, note_index_file, note_audio_dir,
         # Also, if passing through we don't need this.
         boltons.fileutils.mkdir_p(note_audio_dir)
 
-    notes_df = pd.DataFrame(columns=(segment_df.columns.tolist() +
-                                     ['note_file']),
-                            index=pd.MultiIndex(levels=[[], []],
-                                                labels=[[], []],
-                                                names=['hash', 'note_idx']))
-    count = 0
-    for idx, row in segment_df.iterrows():
-        audio_file = row['audio_file']
-
-        if not pass_through:
+    # pass_through and not pass_through are separated to keep
+    # them as fast as possible.
+    if pass_through:
+        # This adds a zero to the index so it matches the format
+        # of the multiindex.
+        notes_df = segment_df.copy().set_index(
+            [segment_df.index.tolist(), [0] * len(segment_df)])
+        note_files = notes_df['audio_file']
+        notes_df['note_file'] = note_files
+    else:
+        notes_index = pd.MultiIndex(levels=[[], []],
+                                    labels=[[], []],
+                                    names=['hash', 'note_idx'])
+        notes_columns = segment_df.columns.tolist() + ['note_file']
+        notes_df = pd.DataFrame(columns=notes_columns, index=notes_index)
+        count = 0
+        for idx, row in segment_df.iterrows():
+            audio_file = row['audio_file']
             onset_file = row['onsets_file']
             note_files = segment_audio_from_onsets(
                 audio_file, onset_file, note_audio_dir)
-            logger.debug("Generated {} note files.".format(len(note_files)))
-        else:
-            note_files = [audio_file]
-            logger.debug("Generated {} note files.".format(len(note_files)))
+            logger.debug("Generated {} note files.".format(
+                len(note_files)))
 
-        for i, x in enumerate(note_files):
-            notes_df.loc[(idx, i), :] = row.tolist() + [x]
-        if PRINT_PROGRESS and (count + 1) % 100 == 0:
-            print("Progress: {:0.1f}% ({} of {})\r".format(
-                ((count + 1) / len(segment_df)) * 100.,
-                (count + 1), len(segment_df)), end='')
-            sys.stdout.flush()
-        count += 1
+            for i, x in enumerate(note_files):
+                notes_df.loc[(idx, i), :] = row.tolist() + [x]
+            if PRINT_PROGRESS and (count + 1) % 100 == 0:
+                print("Progress: {:0.1f}% ({} of {})\r".format(
+                    (((count + 1) / float(len(segment_df))) * 100.),
+                    (count + 1), len(segment_df)), end='')
+                sys.stdout.flush()
+            count += 1
 
-        if limit_n_files and count >= limit_n_files:
-            break
+            if limit_n_files and count >= limit_n_files:
+                break
 
-    if PRINT_PROGRESS:
-        print()
+        if PRINT_PROGRESS:
+            print()
 
     notes_df.to_csv(note_index_file)
     logger.debug("Wrote note index to {} with {} records".format(

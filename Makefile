@@ -49,7 +49,7 @@ $(UIOWA_NOTES): $(UIOWA_INDEX)
 # PHIL doesn't have segments. This just creates a notes file. Which,
 #  lets be real we might as well just copy.
 $(PHIL_NOTES): $(PHIL_INDEX)
-	cp $(PHIL_INDEX) $(PHIL_NOTES)
+	$(PYTHON) scripts/segment_audio.py $(PHIL_INDEX) $(PHIL_NOTES) $(SEGMENTS_DATA_DIR) --pass_thru
 
 $(RWC_NOTES): $(RWC_INDEX)
 	$(PYTHON) scripts/segment_audio.py $(RWC_INDEX) $(RWC_NOTES) $(SEGMENTS_DATA_DIR)
