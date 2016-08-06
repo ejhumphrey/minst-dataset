@@ -16,7 +16,7 @@ GOODSOUNDS_INDEX=goodsounds_index.csv
 UIOWA_NOTES=uiowa_notes.csv
 PHIL_NOTES=phil_notes.csv
 RWC_NOTES=rwc_notes.csv
-GOODSOUDNS_NOTES=goodsounds_notes.csv
+GOODSOUNDS_NOTES=goodsounds_notes.csv
 
 .PHONY: clean test
 
@@ -28,7 +28,7 @@ deps:
 
 
 clean:
-	rm -rf $(UIOWA_INDEX) $(PHIL_INDEX) $(RWC_INDEX) $(UIOWA_NOTES) $(PHIL_NOTES) $(RWC_NOTES)
+	rm -rf $(UIOWA_INDEX) $(PHIL_INDEX) $(RWC_INDEX) $(UIOWA_NOTES) $(PHIL_NOTES) $(RWC_NOTES) $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES)
 
 # Run the download scripts. TODO: Zips?
 download_uiowa:
@@ -60,13 +60,13 @@ $(RWC_NOTES): $(RWC_INDEX)
 	$(PYTHON) scripts/segment_audio.py $(RWC_INDEX) $(RWC_NOTES) $(SEGMENTS_DATA_DIR)
 
 $(GOODSOUNDS_NOTES): $(GOODSOUNDS_INDEX)
-	$(PYTHON) scripts/segment_audio.py $(GOODSOUNDS_INDEX) $(GOODSOUDNS_INDEX) $(SEGMENTS_DATA_DIR)
+	cp $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES)
 
 
 uiowa: $(UIOWA_INDEX) $(UIOWA_NOTES)
 philharmonia: $(PHIL_INDEX) $(PHIL_NOTES)
 rwc: $(RWC_INDEX) $(RWC_NOTES)
-goodsoudns: $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES)
+goodsounds: $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES)
 build: uiowa philharmonia rwc
 
 test:
