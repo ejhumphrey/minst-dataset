@@ -80,6 +80,23 @@ We recommend when loading these into pandas that you use set index_col=[0, 1], s
 df = pd.read_csv('rwc_notes.csv', index_col=[0,1])
 ```
 
+## Note Counts Per Dataset for Accepted Instruments
+|Instrument|UIowa|Philharmonia|RWC|Good-Sounds |
+|----------|-----|------------|---|-----------|
+|bassoon|122|648|1405||
+|cello|681|776|3196|2118|
+|clarinet|258|770|1433|3359|
+|double-bass|587|781|3465||
+|flute|227|781|1095|2308|
+|guitar|352|71|5618|||
+|horn-french|96|546|1896||
+|oboe|104|539|770|494|
+|trombone|66|769|2738||
+|trumpet|212|433|1965|1883|
+|tuba|111|838|540||
+|violin|601|971|3436|1853|
+
+
 ## Appendix: Segmenting the audio
 
 This repository contains some generated / annotated onsets for the instruments we have selected in the taxonomy. If you wish to annotate more, however, you will need to do the following:
