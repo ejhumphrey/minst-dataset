@@ -41,6 +41,8 @@ def generate_id(prefix, name, hash_len=8):
         Generated ID, as `prefix + md5(name)[:8]`
     """
     file_hash = hashlib.md5(name.encode('utf-8')).hexdigest()
+    logger.debug("generate_id: prefix={}, name={}, fhash={}"
+                 "".format(prefix, name, file_hash))
     return "{0}{1}".format(prefix, file_hash[:hash_len])
 
 

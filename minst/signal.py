@@ -116,7 +116,7 @@ ONSETS = {
 
 
 def log_envelope(x, fs, filt_len=100):
-    log_env = 10*np.log10(10.**-4.5 + np.power(x.flatten()[:], 2.0))
+    log_env = 10 * np.log10(10.**-4.5 + np.power(x.flatten()[:], 2.0))
     w_n = np.hanning(filt_len)
     w_n /= w_n.sum()
     return sig.filtfilt(w_n, np.ones(1), log_env)

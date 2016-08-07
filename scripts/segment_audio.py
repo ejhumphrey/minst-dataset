@@ -41,13 +41,37 @@ logger = logging.getLogger("segment_audio")
 PRINT_PROGRESS = True
 
 
-def segment_audio_from_onsets(audio_file, onset_file, note_audio_dir):
+def segment_audio_from_onsets(audio_file, onset_file, note_audio_dir,
+                              file_ext='flac'):
+    """Segment an audio file given an onset file, writing outputs to disk.
+
+    Paramaters
+    ----------
+    audio_file : str
+        Source audio file.
+
+    onset_file : str
+        Path to a CSV file of cut points.
+
+    note_audio_dir : str
+        Path at which to write outputs.
+
+    Returns
+    -------
+    note_files : list of str
+        Collection of paths on disk of generated outputs. These will take the
+        following format:
+            {note_audio_dir}/{input_base}_{i}.{file_ext}
+    """
     # Get the soxi information on this file to get the Duration
-    file_info = claudio.sox.file_info(audio_file)
-    max_length = file_info['Duration']['seconds']
+    max_length = float(claudio.sox.soxi(audio_file, 'D'))
+    # max_length = file_info['Duration']['seconds']
 
     # load the onset file.
     onsets = pd.read_csv(onset_file, index_col=0)
+    if onsets.empty:
+        logger.warning("Onset File is empty! Skipping: {}".format(onset_file))
+        return []
 
     # Append the duration to the end of the offsets so we can
     # do this by pairs.
@@ -68,9 +92,8 @@ def segment_audio_from_onsets(audio_file, onset_file, note_audio_dir):
             end_time = max_length
 
         input_base = utils.filebase(audio_file)
-        file_ext = '.flac'
-        output_file = os.path.join(note_audio_dir, "{}_{}{}".format(
-            input_base, i, file_ext))
+        output_file = os.path.join(note_audio_dir, "{}_{}.{}".format(
+            input_base, i, file_ext.strip('.')))
 
         # split to a new file
         success = claudio.sox.trim(

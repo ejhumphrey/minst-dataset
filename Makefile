@@ -37,11 +37,11 @@ download_phil:
 download: download_uiowa download_phil
 
 $(UIOWA_INDEX):
-	$(PYTHON) scripts/collect_data.py uiowa $(UIOWA_DIR) $(UIOWA_INDEX)
+	$(PYTHON) scripts/collect_data.py uiowa $(UIOWA_DIR) $(UIOWA_INDEX) --strict_taxonomy
 $(PHIL_INDEX):
-	$(PYTHON) scripts/collect_data.py philharmonia $(PHIL_DIR) $(PHIL_INDEX)
-$(RWC_INDEX): 
-	$(PYTHON) scripts/collect_data.py rwc $(RWC_DIR) $(RWC_INDEX)
+	$(PYTHON) scripts/collect_data.py philharmonia $(PHIL_DIR) $(PHIL_INDEX) --strict_taxonomy
+$(RWC_INDEX):
+	$(PYTHON) scripts/collect_data.py rwc $(RWC_DIR) $(RWC_INDEX) --strict_taxonomy
 
 $(UIOWA_NOTES): $(UIOWA_INDEX)
 	$(PYTHON) scripts/segment_audio.py $(UIOWA_INDEX) $(UIOWA_NOTES) $(SEGMENTS_DATA_DIR)
@@ -62,3 +62,4 @@ build: uiowa philharmonia rwc
 
 
 test:
+	./run_tests.sh

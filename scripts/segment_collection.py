@@ -53,15 +53,16 @@ def segment_one(index, audio_file, mode, output_directory):
     time_to_segment = time.time() - t0_segment
 
     t0_write = time.time()
-    output_file = os.path.join(output_directory,
-                               "{}-{}.csv".format(index, mode))
+    output_file = os.path.join(output_directory, "{}.csv".format(index))
     oframe.to_csv(output_file)
     time_to_write = time.time() - t0_write
     if not os.path.exists(output_file):
         raise ValueError("Did not create output! {}".format(output_file))
 
-    logger.info("Segment complete for {} [seg_time: {}] [write_time: {}]"
-                .format(audio_file, time_to_segment, time_to_write))
+    logger.info("Segmentation complete \n\taudio: {} \n\t-> segments: {} \n"
+                "\t[seg_time: {}] [write_time: {}]"
+                .format(audio_file, output_file,
+                        time_to_segment, time_to_write))
 
     return output_file
 
@@ -89,12 +90,24 @@ def segment_many(index, audio_files, mode, output_directory,
     output_paths : list
         Filepaths of generated output, or None for failures.
     """
-    logger.info("beginning segmenting with mode={}".format(mode))
+    logger.info("beginning segmenting {} files with mode={}"
+                "".format(len(index), mode))
     utils.create_directory(output_directory)
     pool = Parallel(n_jobs=num_cpus, verbose=verbose)
     fx = delayed(segment_one)
     return pool(fx(idx, afile, mode, output_directory)
                 for idx, afile in zip(index, audio_files))
+
+
+def main(index_file, output_dir, output_index, mode, num_cpus=1, verbose=0):
+    dframe = pd.read_csv(index_file, index_col=[0])
+    outputs = segment_many(dframe.index.tolist(), dframe.audio_file, mode,
+                           output_dir, num_cpus=num_cpus,
+                           verbose=verbose)
+    dframe['onsets_file'] = outputs
+    output_file = os.path.join(output_dir, output_index)
+    dframe.to_csv(output_file)
+    return os.path.exists(output_file)
 
 
 if __name__ == "__main__":
@@ -126,14 +139,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    level = 'INFO' if args.verbose == 0 else 'DEBUG'
+    level = 'INFO' if args.verbose <= 20 else 'DEBUG'
     logging.config.dictConfig(minst.logger.get_config(level))
 
-    dframe = pd.read_csv(args.index_file)
-    outputs = segment_many(dframe.index.tolist(), dframe.audio_file, args.mode,
-                           args.output_dir, num_cpus=args.num_cpus,
-                           verbose=args.verbose)
-    dframe[args.mode] = outputs
-    output_file = os.path.join(args.output_dir, args.output_index)
-    dframe.to_csv(output_file)
-    sys.exit(0 if os.path.exists(output_file) else 1)
+    success = main(args.index_file, args.output_dir, args.output_index,
+                   args.mode, args.num_cpus, args.verbose)
+    sys.exit(0 if success else 1)

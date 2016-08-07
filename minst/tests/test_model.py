@@ -3,12 +3,10 @@ import os
 
 import minst.model as model
 
-DIRNAME = os.path.dirname(__file__)
-
 
 @pytest.fixture
-def raw_obs():
-    afile = os.path.join(DIRNAME, "dummy_rwc/RWC_I_01/011/011PFNOP.flac")
+def raw_obs(rwc_root):
+    afile = os.path.join(rwc_root, "RWC_I_01/011/011PFNOP.flac")
     return dict(index='U1309f091', dataset='uiowa', audio_file=afile,
                 instrument='piano', source_key='U12345',
                 start_time=0.0, duration=2, note_number=45,
@@ -25,7 +23,7 @@ def test_Observation_validate(raw_obs):
     assert obs.SCHEMA
 
     assert obs.validate()
-    raw_obs['audio_file'] = "dummy_philharmonia/www.philharmonia.co.uk/"\
-                            "assets/audio/samples/instruments/cello.zip"
+    raw_obs['audio_file'] = ("dummy_philharmonia/www.philharmonia.co.uk/"
+                             "assets/audio/samples/instruments/cello.zip")
     obs = model.Observation(**raw_obs)
     assert not obs.validate()

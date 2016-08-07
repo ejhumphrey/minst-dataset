@@ -1,5 +1,4 @@
 import pytest
-import os
 
 import helpers
 import minst.sources.rwc as rwc
@@ -29,11 +28,9 @@ def test_rwc_parse():
         yield helpers.__test, result, expected
 
 
-def test_rwc_collect():
+def test_rwc_collect(rwc_root):
     """Test that an input folder with files in rwc format is correctly
     converted to a dataframe."""
-    rwc_dir = os.path.join(os.path.dirname(__file__), 'dummy_rwc')
-
-    rwc_df = rwc.collect(rwc_dir)
-    yield helpers.__test_df_has_data, rwc_df
-    yield helpers.__test_pd_output, rwc_df, rwc.NAME
+    rwc_df = rwc.collect(rwc_root)
+    helpers.__test_df_has_data(rwc_df)
+    helpers.__test_pd_output(rwc_df, rwc.NAME)

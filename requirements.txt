@@ -1,3 +1,4 @@
 boltons
 git+git://github.com/ejhumphrey/claudio.git
+git+git://github.com/rabitt/pysox.git
 docopt

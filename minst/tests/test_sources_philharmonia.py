@@ -1,5 +1,4 @@
 import pytest
-import os
 
 import helpers
 import minst.sources.philharmonia as philz
@@ -25,11 +24,9 @@ def test_parse_phil_path():
         yield helpers.__test, result, expected
 
 
-def test_philz_collect():
+def test_philz_collect(philz_root):
     """Test that an input folder with files in rwc format is correctly
     converted to a dataframe."""
-    philz_dir = os.path.join(os.path.dirname(__file__), 'dummy_philharmonia')
-
-    philz_df = philz.collect(philz_dir)
-    yield helpers.__test_df_has_data, philz_df
-    yield helpers.__test_pd_output, philz_df, philz.NAME
+    philz_df = philz.collect(philz_root)
+    helpers.__test_df_has_data(philz_df)
+    helpers.__test_pd_output(philz_df, philz.NAME)
