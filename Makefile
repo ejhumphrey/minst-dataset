@@ -68,7 +68,7 @@ uiowa: $(UIOWA_INDEX) $(UIOWA_NOTES)
 philharmonia: $(PHIL_INDEX) $(PHIL_NOTES)
 rwc: $(RWC_INDEX) $(RWC_NOTES)
 goodsounds: $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES)
-build: uiowa philharmonia rwc
+build: uiowa philharmonia rwc goodsounds
 
 test:
 	./run_tests.sh
