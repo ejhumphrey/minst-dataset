@@ -14,7 +14,6 @@ Keys:
 from __future__ import print_function
 import argparse
 import claudio
-import librosa
 import logging
 import matplotlib
 import numpy as np
@@ -371,7 +370,7 @@ if __name__ == '__main__':
     parser.add_argument(
         "--verbose", action='store_true', help="Set verbosity")
     parser.add_argument(
-        '--startat', type=int)
+        '--startat', default=-1, type=int)
     parser.add_argument(
         '--marked_file', default='marked_for_later_idx.txt')
     parser.add_argument(
@@ -405,8 +404,9 @@ if __name__ == '__main__':
         completed_idxs = []
 
         count = 0
-        for idx, row in dframe.iterrows():
-            if args.startat and idx < args.startat:
+        for n, (idx, row) in enumerate(dframe.iterrows()):
+            if int(args.startat) >= 0 and n < args.startat:
+                logger.info("Skipping {}".format(idx))
                 continue
 
             quit, marked = annotate_one(row, data_dir,
