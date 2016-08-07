@@ -26,7 +26,7 @@ $ make test
 
 The goal of this project is to consolidate various disparate solo instrument collections into one big, normalized dataset for ease of use, namely with machine learning in mind. Simply put, this aims to be the MNIST for music audio processing.
 
-![alt tag](https://raw.githubusercontent.com/ejhumphrey/minst-dataset/ejh_20160806_consistent_hash/data/flyover-sketch.jpg)
+![alt tag](https://raw.githubusercontent.com/ejhumphrey/minst-dataset/master/data/flyover-sketch.jpg)
 
 ## Building the dataset from scratch
 
