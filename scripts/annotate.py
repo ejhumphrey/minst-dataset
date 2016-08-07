@@ -14,7 +14,6 @@ Keys:
 from __future__ import print_function
 import argparse
 import claudio
-import librosa
 import logging
 import matplotlib
 import numpy as np
@@ -346,7 +345,7 @@ if __name__ == '__main__':
     parser.add_argument(
         "--verbose", action='store_true', help="Set verbosity")
     parser.add_argument(
-        '--startat', type=int)
+        '--startat', default=-1, type=int)
     parser.add_argument(
         '--marked_file', default='marked_for_later_idx.txt')
     parser.add_argument(
@@ -366,7 +365,7 @@ if __name__ == '__main__':
     level = 'INFO' if not args.verbose else 'DEBUG'
     logging.config.dictConfig(minst.logger.get_config(level))
 
-    dframe = pd.read_csv(args.index_file)
+    dframe = pd.read_csv(args.index_file, index_col=0)
     if args.ignore_no_instrument:
         dframe = dframe.loc[dframe['instrument'].dropna().index]
 
@@ -375,15 +374,16 @@ if __name__ == '__main__':
         completed_idxs = []
 
         count = 0
-        for idx, row in dframe.iterrows():
-            if args.startat and idx < args.startat:
+        for n, (idx, row) in enumerate(dframe.iterrows()):
+            if int(args.startat) >= 0 and n < args.startat:
+                logger.info("Skipping {}".format(idx))
                 continue
 
             logger.info("Annotating:\n{} [idx={}]".format(row, idx))
             # TODO(cbj): There should be a better way to handle this
             #  ... and/or a better naming scheme for the columns
-            onsets = row.get('onset_file', row.get('logcqt', None))
-            quit, marked = annotate_one(row.audio_file, onsets,
+            onsets_file = row.get('onsets_file', '')
+            quit, marked = annotate_one(row.audio_file, onsets_file,
                                         skip_existing=args.skip_existing,
                                         title="{} of {} | instrument: {}"
                                         .format(count, len(dframe),
