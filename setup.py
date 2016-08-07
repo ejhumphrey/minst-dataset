@@ -27,7 +27,6 @@ if __name__ == "__main__":
             'numpy',
             'pandas',
             'joblib',
-            'claudio',
             'pytest',
             'colorama',
             'librosa',
