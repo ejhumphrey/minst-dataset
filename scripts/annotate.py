@@ -23,12 +23,12 @@ import pprint
 import sys
 import time
 
-matplotlib.use("TkAGG")
-
 import matplotlib.pyplot as plt
 import minst.logger
 import minst.signal as S
 import minst.utils as utils
+
+matplotlib.use("TkAGG")
 
 logger = logging.getLogger(__name__)
 
@@ -385,6 +385,9 @@ if __name__ == '__main__':
         '--random',
         action='store_true',
         help="Choose a random file.")
+    parser.add_argument(
+        '--index',
+        help="Choose a specific index to load from the index_file.")
 
     args = parser.parse_args()
     level = 'INFO' if not args.verbose else 'DEBUG'
@@ -399,7 +402,7 @@ if __name__ == '__main__':
     data_dir = set(dframe['onsets_file'].dropna().apply(
         os.path.dirname).tolist()).pop()
 
-    if not args.random:
+    if not args.random and not args.index:
         marked_idxs = []
         completed_idxs = []
 
@@ -436,6 +439,9 @@ if __name__ == '__main__':
         print("In this session, you marked {} files".format(
             len(marked_idxs)))
 
+    elif args.index:
+        row = dframe.loc[args.index]
+        quit, marked = annotate_one(row, data_dir, skip_existing=False)
     else:
         while True:
             row = dframe.sample()
