@@ -12,7 +12,6 @@ import segment_collection
 logging.config.dictConfig(minst.logger.get_config('INFO'))
 
 
-@pytest.mark.skipif(True, reason="hackinit")
 def test_build_uiowa(workspace, uiowa_root):
     expected_index = ['uiowa78fae0a0', 'uiowa095def27']
     uiowa_index = os.path.join(workspace, "uiowa_index.csv")
@@ -46,7 +45,7 @@ def test_build_uiowa(workspace, uiowa_root):
     assert len(notes) == 13
 
 
-@pytest.mark.skipif(False, reason="hackinit")
+@pytest.mark.skipif(True, reason="hackinit")
 def test_build_uiowa_full():
 
     uiowa_root = "/Users/ejhumphrey/data/minst/uiowa"
