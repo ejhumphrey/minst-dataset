@@ -34,6 +34,11 @@ def rwc_root(raw_data_root):
 
 
 @pytest.fixture()
+def goodsounds_root(raw_data_root):
+    return os.path.join(raw_data_root, 'dummy_goodsounds')
+
+
+@pytest.fixture()
 def workspace(request):
     test_workspace = tempfile.mkdtemp()
 

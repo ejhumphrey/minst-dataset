@@ -9,6 +9,7 @@ import minst.utils as utils
 logger = logging.getLogger(__name__)
 
 NAME = 'good-sounds'
+EXPECTED_ROOT_DIR = 'sound_files'
 
 
 def parse(filename):
@@ -24,8 +25,12 @@ def parse(filename):
         From the filename, the following parts:
             (instrument, pack, take, note_id)
     """
-    (instrument, pack, take, note_id) = filename.strip('/').split('/')
-    note_id = utils.filebase(filename)
+    if EXPECTED_ROOT_DIR in filename:
+        filename = filename[filename.index(EXPECTED_ROOT_DIR) +
+                            len(EXPECTED_ROOT_DIR):]
+    (instrument, pack, take, note_id) = (
+        filename.strip('/').split('/'))
+    note_id = utils.filebase(note_id)
     return instrument, pack, take, note_id
 
 

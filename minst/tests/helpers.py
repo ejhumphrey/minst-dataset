@@ -16,7 +16,7 @@ def __test_df_has_data(df):
 def __test_pd_output(pd_output, dataset):
     """Make sure all the files in the tree exist"""
     # Check for valid columns
-    required_columns = ['audio_file', 'dataset', 'instrument', 'dynamic']
+    required_columns = ['audio_file', 'dataset', 'instrument']
     for column in required_columns:
         assert column in pd_output.columns
 
