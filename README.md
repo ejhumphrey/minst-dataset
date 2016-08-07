@@ -10,7 +10,7 @@ The MNIST of music instrument sounds.
 $ pip install git+git://github.com/ejhumphrey/minst-dataset.git
 $ cd minst-dataset
 
-$ pip install -r requirements.txt
+$ pip install -U -r requirements.txt
 OR
 $ make deps
 ```
@@ -21,6 +21,12 @@ This project ships with just enough data to test itself.
 ```
 $ make test
 ```
+
+## What's going on here?
+
+The goal of this project is to consolidate various disparate solo instrument collections into one big, normalized dataset for ease of use, namely with machine learning in mind. Simply put, this aims to be the MNIST for music audio processing.
+
+![alt tag](https://raw.githubusercontent.com/ejhumphrey/minst-dataset/ejh_20160806_consistent_hash/data/flyover-sketch.jpg)
 
 ## Building the dataset from scratch
 
