@@ -54,4 +54,5 @@ def get_config(level):
     theconfig['loggers']['']['level'] = level
 
     logging.getLogger('fileio.py').propagate = False
+    logging.getLogger('claudio.sox').propagate = False
     return theconfig

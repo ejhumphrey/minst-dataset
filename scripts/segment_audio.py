@@ -165,7 +165,7 @@ def segment_audio(segment_index_file, note_index_file, note_audio_dir,
 
             for i, x in enumerate(note_files):
                 notes_df.loc[(idx, i), :] = row.tolist() + [x]
-            if PRINT_PROGRESS and (count + 1) % 100 == 0:
+            if PRINT_PROGRESS:
                 print("Progress: {:0.1f}% ({} of {})\r".format(
                     (((count + 1) / float(len(segment_df))) * 100.),
                     (count + 1), len(segment_df)), end='')
