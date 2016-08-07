@@ -63,8 +63,8 @@ def segment_audio_from_onsets(audio_file, onset_file, note_audio_dir,
             {note_audio_dir}/{input_base}_{i}.{file_ext}
     """
     # Get the soxi information on this file to get the Duration
-    file_info = claudio.sox.file_info(audio_file)
-    max_length = file_info['Duration']['seconds']
+    max_length = float(claudio.sox.soxi(audio_file, 'D'))
+    # max_length = file_info['Duration']['seconds']
 
     # load the onset file.
     onsets = pd.read_csv(onset_file, index_col=0)
