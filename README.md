@@ -58,7 +58,7 @@ $ python scripts/download.py data/philharmonia.json ~/data/philharmonia
 
 Assuming your data is downloaded and available, you can use the following to build the index from the downloaded files, and then extract the note audio from it.
 
-Warning: extracting notes takes about 30m per dataset.
+Warning: extracting notes could take up to an hour with all four datasets.
 
 ```
 $ make build
@@ -71,6 +71,8 @@ phil_notes.csv
 rwc_notes.csv
 goodsounds_notes.csv
 ```
+
+If the dataset is not available on your machine, `make build` should skip it.
 
 We recommend when loading these into pandas that you use set index_col=[0, 1], since the first two columns are part of the multi_index, where column 0 is the original file hash, and column 1 is the note index:
 

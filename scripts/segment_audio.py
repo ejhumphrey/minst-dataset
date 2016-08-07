@@ -131,6 +131,13 @@ def segment_audio(segment_index_file, note_index_file, note_audio_dir,
     segment_df = pd.read_csv(segment_index_file, index_col=0)
     logger.debug("loaded {} records.".format(
         len(segment_df)))
+    if segment_df.empty:
+        logger.warning(utils.colorize(
+            "No data available in {}; exiting.".format(segment_index_file),
+            color='red'))
+        # Here, we sys.exit 0 so the makefile will continue to build
+        # other datasets, even if this one
+        sys.exit(0)
 
     # If we're passing through, keep all of them.
     if not pass_through:
