@@ -30,6 +30,21 @@ The goal of this project is to consolidate various disparate solo instrument col
 
 ## Building the dataset from scratch
 
+### Directory Structure
+
+This library expects a certain directory structure for everything to work nicely. The following is a flyover of what this should look like locally by default (according to `Makefile`):
+
+```
+{DATA_DIR}/
+  uiowa/
+    ...
+  RWC Instruments/
+    ...
+  philharmonia/
+    ...
+```
+The only value in the Makefile you may need to update is `DATA_DIR`, in the case that you would prefer the data live elsewhere when downloaded, e.g. a different hard drive.
+
 ### Get the data
 
 This project uses three different solo instrument datasets.
@@ -69,6 +84,8 @@ uiowa_notes.csv
 phil_notes.csv
 rwc_notes.csv
 ```
+
+*Note:* These are written to the directory from which the Makefile is called, i.e. repository root. This is due to change per [#23](https://github.com/ejhumphrey/minst-dataset/issues/23).
 
 We recommend when loading these into pandas that you use set index_col=[0, 1], since the first two columns are part of the multi_index, where column 0 is the original file hash, and column 1 is the note index:
 
