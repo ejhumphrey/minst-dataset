@@ -21,10 +21,10 @@ import logging.config
 import os
 import pandas as pd
 import shutil
-import sys
 import time
 
 import minst.logger
+import minst.taxonomy
 import minst.utils as utils
 
 logger = logging.getLogger("example_datasets")
@@ -69,6 +69,7 @@ def copy_example_datasets(destination_dir, source_indeces, n_files):
     result_df = pd.DataFrame(values,
                              columns=['dataset', 'note_file', 'instrument'],
                              index=indexes)
+    result_df = minst.taxonomy.normalize_instrument_names(result_df)
     result_df.to_csv(os.path.join(destination_dir, "notes_index.csv"))
     print("Copied {} files to {}".format(len(result_df), destination_dir))
 

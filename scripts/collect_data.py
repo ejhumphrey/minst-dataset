@@ -1,17 +1,27 @@
 import argparse
+import logging
 import os
 import sys
 
+import minst.logger
 import minst.sources
 import minst.taxonomy
+import minst.utils as utils
+
+logger = logging.getLogger("collect_data")
 
 
 def build_index(dataset, base_directory, output_file, backup_index=None,
                 strict_taxonomy=False):
     df = minst.sources.SOURCES[dataset].collect(base_directory)
-    if strict_taxonomy:
-        df_norm = minst.taxonomy.normalize_instrument_names(df)
-        df = df.loc[df_norm.instrument.dropna().index]
+    if not df.empty:
+        if strict_taxonomy:
+            df_norm = minst.taxonomy.normalize_instrument_names(df)
+            df = df.loc[df_norm.instrument.dropna().index]
+    else:
+        logger.warning(utils.colorize("Collecting {} failed; is the data "
+                                      "vailable at {}?"
+                                      .format(dataset, base_directory)))
 
     df.to_csv(output_file)
     if backup_index is not None:
@@ -42,6 +52,8 @@ if __name__ == "__main__":
         help="If True, filter rows based on the target taxonomy.")
 
     args = parser.parse_args()
+    logging.config.dictConfig(minst.logger.get_config('INFO'))
+
     success = build_index(args.dataset, args.base_dir,
                           args.index_file, args.backup_index,
                           args.strict_taxonomy)

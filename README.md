@@ -47,14 +47,15 @@ The only value in the Makefile you may need to update is `DATA_DIR`, in the case
 
 ### Get the data
 
-This project uses three different solo instrument datasets.
+This project uses four different solo instrument datasets.
 - [University of Iowa - MIS](http://theremin.music.uiowa.edu/MIS.html)
 - [Philharmonia](http://www.philharmonia.co.uk/explore/make_music)
 - [RWC - Instruments](https://staff.aist.go.jp/m.goto/RWC-MDB/rwc-mdb-i.html)
+- [Good Sounds](http://mtg.upf.edu/download/datasets/good-sounds)
 
-We provide "manifest" files with which one can download the first two collections. For access to the third (RWC), you should contact the kind folks at AIST.
+We provide "manifest" files with which one can download the first two collections. For access to the third (RWC), you should contact the kind folks at AIST. Access to Good-Sounds is public, but requires that you fill out a form first.
 
-To download the data, you can invoke the following from your cloned repository:
+To download the available data, you can invoke the following from your cloned repository:
 
 ```
 $ make download
@@ -72,7 +73,7 @@ $ python scripts/download.py data/philharmonia.json ~/data/philharmonia
 
 Assuming your data is downloaded and available, you can use the following to build the index from the downloaded files, and then extract the note audio from it.
 
-Warning: extracting notes takes about 30m per dataset.
+Warning: extracting notes could take up to an hour with all four datasets.
 
 ```
 $ make build
@@ -83,7 +84,10 @@ Afterwards, the annotated notes should be available in these files:
 uiowa_notes.csv
 phil_notes.csv
 rwc_notes.csv
+goodsounds_notes.csv
 ```
+
+If the dataset is not available on your machine, `make build` should skip it.
 
 *Note:* These are written to the directory from which the Makefile is called, i.e. repository root. This is due to change per [#23](https://github.com/ejhumphrey/minst-dataset/issues/23).
 
@@ -92,6 +96,23 @@ We recommend when loading these into pandas that you use set index_col=[0, 1], s
 ```python
 df = pd.read_csv('rwc_notes.csv', index_col=[0,1])
 ```
+
+## Note Counts Per Dataset for Accepted Instruments
+|Instrument|UIowa|Philharmonia|RWC|Good-Sounds |
+|----------|-----|------------|---|-----------|
+|bassoon|122|648|1405||
+|cello|681|776|3196|2118|
+|clarinet|258|770|1433|3359|
+|double-bass|587|781|3465||
+|flute|227|781|1095|2308|
+|guitar|352|71|5618|||
+|horn-french|96|546|1896||
+|oboe|104|539|770|494|
+|trombone|66|769|2738||
+|trumpet|212|433|1965|1883|
+|tuba|111|838|540||
+|violin|601|971|3436|1853|
+
 
 ## Appendix: Segmenting the audio
 

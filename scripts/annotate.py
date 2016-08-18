@@ -23,11 +23,12 @@ import pprint
 import sys
 import time
 
-matplotlib.use("TkAGG")
-
 import matplotlib.pyplot as plt
 import minst.logger
 import minst.signal as S
+import minst.utils as utils
+
+matplotlib.use("TkAGG")
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class OnsetCanvas(object):
         self.fig, self.axes = plt.subplots(nrows=3, ncols=1,
                                            figsize=(20, 6))
 
+        self.audio_file = audio_file
         self.x, self.fs = claudio.read(audio_file, samplerate=22050,
                                        channels=1, bytedepth=2)
 
@@ -274,9 +276,6 @@ class OnsetCanvas(object):
                                        wait=int(self.fs * .05))
             self.set_onset_data(pd.DataFrame(dict(time=onsets)))
 
-        elif event.key == '5':
-            pass
-
         elif event.key == '6':
             # Reset onsets with "logcqt_onsets"
             logger.debug("Getting logcqt_onsets()")
@@ -289,6 +288,12 @@ class OnsetCanvas(object):
             logger.debug("Getting logcqt_onsets()")
             onsets = S.logcqt_onsets(self.x, self.fs,
                                      wait=int(self.fs * .02))
+            self.set_onset_data(pd.DataFrame(dict(time=onsets)))
+
+        elif event.key == '0':
+            # Reset onsets with "logcqt_onsets"
+            logger.debug("Getting hll_onsets()")
+            onsets = S.hll_onsets(self.audio_file)
             self.set_onset_data(pd.DataFrame(dict(time=onsets)))
 
         elif event.key == 'left':
@@ -308,30 +313,50 @@ class OnsetCanvas(object):
             self.shift_onsets(.1)
 
 
-def annotate_one(audio_file, onset_file, output_file=None, title=None,
-                 skip_existing=False):
-    if output_file is None:
-        output_file = onset_file.replace(".csv", "-fix.csv")
+def annotate_one(row, data_dir, skip_existing=False):
+    """Create a canvas from the row information to annotate
+    a single audio_file. If a previous onset file exists, loads it first.
+
+    Parameters
+    ----------
+    row : pd.Series
+
+    data_dir : str
+        Path to where to put index files if none given.
+
+    skip_existing : bool
+        If edited files exist, skip over them.
+    """
+    # audio_file, onset_file, output_file=None, title=None,
+    logger.info("Annotating:\n{} [idx={}]".format(row.audio_file,
+                                                  row.name))
+
+    # Safely try to load the onset_file
+    if pd.isnull(row.onsets_file) or not os.path.exists(row.onsets_file):
+        onsets = pd.DataFrame([])
+        output_file = os.path.join(data_dir, "{}-fix.csv".format(row.name))
+        logger.debug("No pre-existing onsets file exists for {}".format(
+            row.audio_file))
+    else:
+        onsets = pd.read_csv(row.onsets_file)
+        output_file = row.onsets_file.replace(".csv", "-fix.csv")
+
+    title = "{}| instrument: {}".format(row.name, row['instrument'])
+    logger.info("Title: {}".format(title))
 
     if os.path.exists(output_file):
         if skip_existing:
             return False, False
-        onset_file = output_file
-
-    logger.info("Working on audio: {}".format(audio_file))
-    logger.info("Onset_file: {}".format(onset_file))
-    logger.info("Title: {}".format(title))
     t0 = time.time()
 
-    onsets = pd.read_csv(onset_file) if onset_file else pd.DataFrame([])
-    canvas = OnsetCanvas(audio_file, output_file, onsets,
+    canvas = OnsetCanvas(row.audio_file, output_file, onsets,
                          title=title)
     logger.info("Writing to: {}".format(output_file))
     plt.show(block=True)
 
     # Should we continue?
     t_end = time.time() - t0
-    logger.info("Took {}s to work on {}".format(t_end, audio_file))
+    logger.info("Took {}s to work on {}".format(t_end, row.audio_file))
     return canvas.quit, canvas._mark_for_later
 
 
@@ -360,6 +385,9 @@ if __name__ == '__main__':
         '--random',
         action='store_true',
         help="Choose a random file.")
+    parser.add_argument(
+        '--index',
+        help="Choose a specific index to load from the index_file.")
 
     args = parser.parse_args()
     level = 'INFO' if not args.verbose else 'DEBUG'
@@ -369,7 +397,12 @@ if __name__ == '__main__':
     if args.ignore_no_instrument:
         dframe = dframe.loc[dframe['instrument'].dropna().index]
 
-    if not args.random:
+    # Get the data directory by finding the common prefix from the onsests_file
+    # Assumes that all onsets files live in the same place!
+    data_dir = set(dframe['onsets_file'].dropna().apply(
+        os.path.dirname).tolist()).pop()
+
+    if not args.random and not args.index:
         marked_idxs = []
         completed_idxs = []
 
@@ -379,15 +412,8 @@ if __name__ == '__main__':
                 logger.info("Skipping {}".format(idx))
                 continue
 
-            logger.info("Annotating:\n{} [idx={}]".format(row, idx))
-            # TODO(cbj): There should be a better way to handle this
-            #  ... and/or a better naming scheme for the columns
-            onsets_file = row.get('onsets_file', '')
-            quit, marked = annotate_one(row.audio_file, onsets_file,
-                                        skip_existing=args.skip_existing,
-                                        title="{} of {} | instrument: {}"
-                                        .format(count, len(dframe),
-                                                row['instrument']))
+            quit, marked = annotate_one(row, data_dir,
+                                        skip_existing=args.skip_existing)
 
             if quit:
                 logger.info("Application Exiting...")
@@ -396,6 +422,9 @@ if __name__ == '__main__':
                 marked_idxs.append(idx)
             else:
                 completed_idxs.append(idx)
+
+            logger.info(utils.colorize("Completed {} of {}".format(
+                count, len(dframe))))
             count += 1
 
         print("The following indexes were marked to return to:")
@@ -410,18 +439,13 @@ if __name__ == '__main__':
         print("In this session, you marked {} files".format(
             len(marked_idxs)))
 
+    elif args.index:
+        row = dframe.loc[args.index]
+        quit, marked = annotate_one(row, data_dir, skip_existing=False)
     else:
         while True:
             row = dframe.sample()
-
-            logger.info("Annotating:\n{}".format(row))
-            # TODO(cbj): There should be a better way to handle this
-            #  ... and/or a better naming scheme for the columns
-            onsets = row.get('onset_file', row.get('logcqt', None))
-            quit, marked = annotate_one(row.audio_file.iloc[0], onsets.iloc[0],
-                                        skip_existing=False,
-                                        title="{}| instrument: {}"
-                                        .format(row.index[0], row['instrument'].iloc[0]))
+            quit, marked = annotate_one(row, data_dir, skip_existing=False)
             if quit:
                 logger.info("Application Exiting...")
                 break
