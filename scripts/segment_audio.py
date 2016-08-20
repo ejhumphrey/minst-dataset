@@ -70,9 +70,9 @@ def segment_audio_from_onsets(audio_file, onset_file, note_audio_dir,
     # load the onset file.
     onsets = pd.read_csv(onset_file, index_col=0)
     if onsets.empty:
-        logger.warning("Onset File is empty! We can't extract notes without "
-                       "onsets, so skipping: {}".format(
-                        os.path.basename(onset_file)))
+        logger.warning(
+            "Onset File is empty! We can't extract notes without "
+            "onsets, so skipping: {}".format(os.path.basename(onset_file)))
         return []
 
     # Append the duration to the end of the offsets so we can
