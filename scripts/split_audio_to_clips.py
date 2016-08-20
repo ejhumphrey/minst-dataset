@@ -34,6 +34,7 @@ import sys
 import time
 
 import minst.logger
+import minst.model as model
 import minst.utils as utils
 
 logger = logging.getLogger("segment_audio")
@@ -41,8 +42,8 @@ logger = logging.getLogger("segment_audio")
 PRINT_PROGRESS = True
 
 
-def segment_audio_from_onsets(audio_file, onset_file, note_audio_dir,
-                              file_ext='flac'):
+def split_audio_with_onsets(audio_file, onset_file, note_audio_dir,
+                            file_ext='flac'):
     """Segment an audio file given an onset file, writing outputs to disk.
 
     Paramaters
@@ -65,7 +66,6 @@ def segment_audio_from_onsets(audio_file, onset_file, note_audio_dir,
     """
     # Get the soxi information on this file to get the Duration
     max_length = float(claudio.sox.soxi(audio_file, 'D'))
-    # max_length = file_info['Duration']['seconds']
 
     # load the onset file.
     onsets = pd.read_csv(onset_file, index_col=0)
@@ -167,7 +167,7 @@ def segment_audio(segment_index_file, note_index_file, note_audio_dir,
         for idx, row in segment_df.iterrows():
             audio_file = row['audio_file']
             onset_file = row['onsets_file']
-            note_files = segment_audio_from_onsets(
+            note_files = split_audio_with_onsets(
                 audio_file, onset_file, note_audio_dir)
             logger.debug("Generated {} note files ({} of {}).".format(
                 len(note_files), (count + 1), len(segment_df)))
