@@ -14,13 +14,44 @@ class Observation(object):
                                'observation.json')
     SCHEMA = json.load(open(SCHEMA_PATH))
 
-    def __init__(self, index, dataset, audio_file, instrument, source_key,
-                 start_time, duration, note_number, dynamic, partition):
+    def __init__(self, index, dataset, audio_file, instrument, source_index,
+                 start_time, duration, note_number=None, dynamic=None,
+                 partition=None):
+        """Model definition for an instrument observation.
+
+        Parameters
+        ----------
+        index :
+
+        dataset :
+
+        audio_file : str
+            Relative file path to an audiofile.
+
+        instrument :
+
+        source_index :
+
+        start_time :
+
+        duration :
+
+        note_number :
+
+        dynamic :
+
+        partition :
+
+        Returns
+        -------
+        obs : Observation
+            Populated observation
+        """
         self.index = index
         self.dataset = dataset
         self.audio_file = audio_file
         self.instrument = instrument
-        self.source_key = source_key
+        self.source_index = source_index
         self.start_time = start_time
         self.duration = duration
         self.note_number = note_number

@@ -11,7 +11,7 @@ def test_module():
     assert SC is not None
 
 
-def test_split_audio_with_onsets(uiowa_root, onset_root, workspace):
+def test_audio_to_observations(uiowa_root, onset_root, workspace):
     audio_file = os.path.join(
         uiowa_root, "theremin.music.uiowa.edu/sound files/MIS/Brass/tuba"
                     "/Tuba.ff.C3C4.aiff")
@@ -24,8 +24,13 @@ def test_split_audio_with_onsets(uiowa_root, onset_root, workspace):
     utils.create_directory(output_dir)
 
     fext = 'flac'
-    notes = SC.split_audio_with_onsets(audio_file, onset_file,
-                                       output_dir, file_ext=fext)
+    observations = SC.audio_to_observations(
+        index, audio_file, onset_file, output_dir, file_ext=fext,
+        instrument='Tuba', dataset='uiowa')
 
     onset_df = pd.read_csv(onset_file)
-    assert len(notes) == len(onset_df)
+    assert len(observations) == len(onset_df)
+    for obs in observations:
+        obs.instrument == 'Tuba'
+
+    assert len(set([obs.index for obs in observations])) == len(observations)

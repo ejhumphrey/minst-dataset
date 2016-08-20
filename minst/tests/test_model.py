@@ -8,7 +8,7 @@ import minst.model as model
 def raw_obs(rwc_root):
     afile = os.path.join(rwc_root, "RWC_I_01/011/011PFNOP.flac")
     return dict(index='U1309f091', dataset='uiowa', audio_file=afile,
-                instrument='piano', source_key='U12345',
+                instrument='piano', source_index='U12345',
                 start_time=0.0, duration=2, note_number=45,
                 dynamic='pp', partition='test-0')
 

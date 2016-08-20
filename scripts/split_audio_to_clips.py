@@ -42,8 +42,8 @@ logger = logging.getLogger("segment_audio")
 PRINT_PROGRESS = True
 
 
-def split_audio_with_onsets(audio_file, onset_file, note_audio_dir,
-                            file_ext='flac'):
+def audio_to_observations(index, audio_file, onset_file, note_audio_dir,
+                          file_ext='flac', **meta):
     """Segment an audio file given an onset file, writing outputs to disk.
 
     Paramaters
@@ -56,6 +56,10 @@ def split_audio_with_onsets(audio_file, onset_file, note_audio_dir,
 
     note_audio_dir : str
         Path at which to write outputs.
+
+    **meta : keyword args
+        Additional record data to pass on to each observation; see
+        model.Observation for more detail.
 
     Returns
     -------
@@ -82,7 +86,7 @@ def split_audio_with_onsets(audio_file, onset_file, note_audio_dir,
     # Make sure it's sorted by time now.
     onsets = onsets.sort_values('time').reset_index(drop=True)
 
-    new_files = []
+    observations = []
 
     # for each pair of onsets
     for i in range(len(onsets) - 1):
@@ -94,17 +98,24 @@ def split_audio_with_onsets(audio_file, onset_file, note_audio_dir,
             end_time = max_length
 
         input_base = utils.filebase(audio_file)
-        output_file = os.path.join(note_audio_dir, "{}_{}.{}".format(
-            input_base, i, file_ext.strip('.')))
+        rel_output_file = "{}_{}.{}".format(input_base, i, file_ext.strip('.'))
+        output_file = os.path.join(note_audio_dir, rel_output_file)
 
         # split to a new file
         success = claudio.sox.trim(
             audio_file, output_file, start_time, end_time)
 
         if success:
-            new_files.append(output_file)
+            clip_index = utils.generate_id(
+                input_base, "{}-{}".format(start_time, end_time), hash_len=6)
 
-    return new_files
+            obs = model.Observation(
+                index=clip_index, audio_file=rel_output_file,
+                source_index=index, start_time=start_time,
+                duration=end_time - start_time, **meta)
+            observations.append(obs)
+
+    return observations
 
 
 def segment_audio(segment_index_file, note_index_file, note_audio_dir,
