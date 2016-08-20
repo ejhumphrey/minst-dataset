@@ -18,6 +18,32 @@ import time
 logger = logging.getLogger()
 
 
+def check_connection(default='http://74.125.228.100', timeout=1):
+    """Test the internet connection.
+
+    Parameters
+    ----------
+    default : str
+        URL to test; defaults to a Google IP address.
+
+    timeout : number
+        Time in seconds to wait before giving up.
+
+    Returns
+    -------
+    success : bool
+        True if appears to be online, else False
+    """
+    success = True
+    try:
+        surl = urlparse.quote(default, safe=':./')
+        urlrequest.urlopen(surl, timeout=timeout)
+    except urlerror.URLError as derp:
+        success = False
+        logger.debug("Network unreachable: {}".format(derp))
+    return success
+
+
 def url_to_filepath(url, output_dir):
     """Create a valid output filepath for a given URL.
 
@@ -58,7 +84,9 @@ def download_one(url, output_file, skip_existing=True):
     """
     if os.path.exists(output_file) and skip_existing:
         print(" Skipping (exists): {}".format(url))
-        return
+        return True
+    elif not check_connection():
+        return False
 
     print("[{}] Fetching: {}".format(time.asctime(), url))
     try:

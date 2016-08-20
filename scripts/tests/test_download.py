@@ -19,6 +19,7 @@ def workspace(request):
     return test_workspace
 
 
+@pytest.mark.skipif(not DL.check_connection(), reason='No internet')
 def test_download_one(workspace):
     url = ("https://www.wikipedia.org/portal/wikipedia.org/assets/img/"
            "Wikipedia_wordmark@2x.png")
@@ -26,6 +27,7 @@ def test_download_one(workspace):
     assert DL.download_one(url, fout)
 
 
+@pytest.mark.skipif(not DL.check_connection(), reason='No internet')
 def test_download_many(workspace):
     urls = ["https://www.wikipedia.org/portal/wikipedia.org/assets/img/"
             "Wikipedia_wordmark@2x.png",
