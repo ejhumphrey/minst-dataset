@@ -42,7 +42,7 @@ logger = logging.getLogger("segment_audio")
 PRINT_PROGRESS = True
 
 
-def audio_to_observations(index, audio_file, onset_file, note_audio_dir,
+def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
                           file_ext='flac', **meta):
     """Segment an audio file given an onset file, writing outputs to disk.
 
@@ -51,7 +51,7 @@ def audio_to_observations(index, audio_file, onset_file, note_audio_dir,
     audio_file : str
         Source audio file.
 
-    onset_file : str
+    onsets_file : str
         Path to a CSV file of cut points.
 
     note_audio_dir : str
@@ -72,11 +72,11 @@ def audio_to_observations(index, audio_file, onset_file, note_audio_dir,
     max_length = float(claudio.sox.soxi(audio_file, 'D'))
 
     # load the onset file.
-    onsets = pd.read_csv(onset_file, index_col=0)
+    onsets = pd.read_csv(onsets_file, index_col=0)
     if onsets.empty:
         logger.warning(
             "Onset File is empty! We can't extract notes without "
-            "onsets, so skipping: {}".format(os.path.basename(onset_file)))
+            "onsets, so skipping: {}".format(os.path.basename(onsets_file)))
         return []
 
     # Append the duration to the end of the offsets so we can
@@ -134,73 +134,53 @@ def audio_collection_to_observations(segment_index_file, note_index_file,
     note_audio_dir : str
         Path to store the resulting audio file.
 
-
+    Returns
+    -------
+    success : bool
+        True if the method completed as expected.
     """
-    logger.info("Begin segment_audio()")
+    logger.info("Begin audio collection segmentation")
     logger.debug("Loading segment index")
     segment_df = pd.read_csv(segment_index_file, index_col=0)
-    logger.debug("loaded {} records.".format(
-        len(segment_df)))
+    logger.debug("loaded {} records.".format(len(segment_df)))
+
     if segment_df.empty:
         logger.warning(utils.colorize(
             "No data available in {}; exiting.".format(segment_index_file),
             color='red'))
         # Here, we sys.exit 0 so the makefile will continue to build
         # other datasets, even if this one
-        sys.exit(0)
+        return True
 
-    # If we're passing through, keep all of them.
-    if not pass_through:
-        segment_df = segment_df[segment_df['onsets_file'].notnull()]
-        logger.debug("Filtered {} records without onset files.".format(
-            len(segment_df)))
-
-        # Also, if passing through we don't need this.
-        boltons.fileutils.mkdir_p(note_audio_dir)
-
-    # pass_through and not pass_through are separated to keep
-    # them as fast as possible.
-    if pass_through:
-        # This adds a zero to the index so it matches the format
-        # of the multiindex.
-        notes_df = segment_df.copy().set_index(
-            [segment_df.index.tolist(), [0] * len(segment_df)])
-        note_files = notes_df['audio_file']
-        notes_df['note_file'] = note_files
-    else:
-        notes_index = pd.MultiIndex(levels=[[], []],
-                                    labels=[[], []],
-                                    names=['hash', 'note_idx'])
-        notes_columns = segment_df.columns.tolist() + ['note_file']
-        notes_df = pd.DataFrame(columns=notes_columns, index=notes_index)
-        count = 0
-        for idx, row in segment_df.iterrows():
-            audio_file = row['audio_file']
-            onset_file = row['onsets_file']
-            note_files = split_audio_with_onsets(
-                audio_file, onset_file, note_audio_dir)
-            logger.debug("Generated {} note files ({} of {}).".format(
-                len(note_files), (count + 1), len(segment_df)))
-
-            for i, x in enumerate(note_files):
-                notes_df.loc[(idx, i), :] = row.tolist() + [x]
-            if PRINT_PROGRESS:
-                print("Progress: {:0.1f}% ({} of {})\r".format(
-                    (((count + 1) / float(len(segment_df))) * 100.),
-                    (count + 1), len(segment_df)), end='')
-                sys.stdout.flush()
-            count += 1
-
-            if limit_n_files and count >= limit_n_files:
-                break
+    count = 0
+    observations = []
+    for idx, row in segment_df.iterrows():
+        observations += audio_to_observations(
+            idx, row.audio_file, row.onsets_file, note_audio_dir,
+            file_ext='flac', dataset=row.dataset, instrument=row.instrument,
+            dynamic=row.dynamic)
+        logger.debug("Generated {} observations ({} of {}).".format(
+            len(observations), (count + 1), len(segment_df)))
 
         if PRINT_PROGRESS:
-            print()
+            print("Progress: {:0.1f}% ({} of {})\r".format(
+                (((count + 1) / float(len(segment_df))) * 100.),
+                (count + 1), len(segment_df)), end='')
+            sys.stdout.flush()
+        count += 1
 
-    notes_df.to_csv(note_index_file)
+        if limit_n_files and count >= limit_n_files:
+            break
+
+    if PRINT_PROGRESS:
+        print()
+
+    collection = model.Collection(observations)
+    collection.to_dataframe().to_csv(note_index_file)
     logger.debug("Wrote note index to {} with {} records".format(
-        note_index_file, len(notes_df)))
-    logger.info("Completed segment_audio()")
+        note_index_file, len(collection)))
+    logger.info("Completed audio collection segmentation")
+    return os.path.exists(note_index_file)
 
 
 def segment_audio(segment_index_file, note_index_file, note_audio_dir,
@@ -261,9 +241,9 @@ def segment_audio(segment_index_file, note_index_file, note_audio_dir,
         count = 0
         for idx, row in segment_df.iterrows():
             audio_file = row['audio_file']
-            onset_file = row['onsets_file']
+            onsets_file = row['onsets_file']
             note_files = split_audio_with_onsets(
-                audio_file, onset_file, note_audio_dir)
+                audio_file, onsets_file, note_audio_dir)
             logger.debug("Generated {} note files ({} of {}).".format(
                 len(note_files), (count + 1), len(segment_df)))
 
