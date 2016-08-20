@@ -15,8 +15,7 @@ class Observation(object):
     SCHEMA = json.load(open(SCHEMA_PATH))
 
     def __init__(self, index, dataset, audio_file, instrument, source_key,
-                 start_time, duration, note_number, dynamic, partition,
-                 features=None):
+                 start_time, duration, note_number, dynamic, partition):
         self.index = index
         self.dataset = dataset
         self.audio_file = audio_file
@@ -27,10 +26,15 @@ class Observation(object):
         self.note_number = note_number
         self.dynamic = dynamic
         self.partition = partition
-        self.features = features if features else dict()
 
     def to_builtin(self):
         return self.__dict__.copy()
+
+    def to_record(self):
+        """Returns the observation as an (index, record) tuple."""
+        obj = self.to_builtin()
+        index = obj.pop('index')
+        return index, obj
 
     def validate(self, schema=None):
         schema = self.SCHEMA if schema is None else schema
@@ -47,8 +51,10 @@ class Observation(object):
 
 
 class Collection(object):
+    MODEL = Observation
+
     def __init__(self, values):
-        self._values = [Observation(**v) for v in values]
+        self._values = [self.MODEL(**v) for v in values]
 
     def items(self):
         return [(v.index, v) for v in self._values]
@@ -74,10 +80,16 @@ class Collection(object):
         return any([o.validate() for o in self.values()])
 
     def to_dataframe(self):
-        pass
+        irecords = [obs.to_record() for obs in self.values()]
+        return pd.DataFrame.from_records(
+            [ir[1] for ir in irecords],
+            index=[ir[0] for ir in irecords])
 
     def from_dataframe(self, dframe):
         pass
+
+    def __len__(self):
+        return len(self._values)
 
 
 def load(filename):

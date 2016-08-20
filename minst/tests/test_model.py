@@ -18,6 +18,18 @@ def test_Observation___init__(raw_obs):
     assert obs
 
 
+def test_Observation_to_builtin(raw_obs):
+    obs = model.Observation(**raw_obs)
+    assert obs.to_builtin() == raw_obs
+
+
+def test_Observation_to_record(raw_obs):
+    obs = model.Observation(**raw_obs)
+    idx, rec = obs.to_record()
+    assert idx == raw_obs['index']
+    assert 'index' not in rec
+
+
 def test_Observation_validate(raw_obs):
     obs = model.Observation(**raw_obs)
     assert obs.SCHEMA
@@ -27,3 +39,14 @@ def test_Observation_validate(raw_obs):
                              "assets/audio/samples/instruments/cello.zip")
     obs = model.Observation(**raw_obs)
     assert not obs.validate()
+
+
+def test_Collection___init__(raw_obs):
+    dset = model.Collection([raw_obs])
+    assert len(dset)
+
+
+def test_Collection_to_dataframe(raw_obs):
+    dset = model.Collection([raw_obs]).to_dataframe()
+    assert len(dset) == 1
+    assert dset.index[0] == raw_obs['index']

@@ -1,3 +1,3 @@
 export PYTHONPATH=scripts:.:$PYTHONPATH
 
-py.test -vs .
+py.test -vvs .
