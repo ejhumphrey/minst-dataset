@@ -50,18 +50,18 @@ $(GOODSOUNDS_INDEX):
 
 
 $(UIOWA_NOTES): $(UIOWA_INDEX)
-	$(PYTHON) scripts/segment_audio.py $(UIOWA_INDEX) $(UIOWA_NOTES) $(SEGMENTS_DATA_DIR)
+	$(PYTHON) scripts/split_audio_to_clips.py $(UIOWA_INDEX) $(UIOWA_NOTES) $(SEGMENTS_DATA_DIR)
 
 # pass_thru because phil already has notes
 $(PHIL_NOTES): $(PHIL_INDEX)
-	$(PYTHON) scripts/segment_audio.py $(PHIL_INDEX) $(PHIL_NOTES) --pass_thru
+	$(PYTHON) scripts/split_audio_to_clips.py $(PHIL_INDEX) $(PHIL_NOTES) --pass_thru
 
 $(RWC_NOTES): $(RWC_INDEX)
-	$(PYTHON) scripts/segment_audio.py $(RWC_INDEX) $(RWC_NOTES) $(SEGMENTS_DATA_DIR)
+	$(PYTHON) scripts/split_audio_to_clips.py $(RWC_INDEX) $(RWC_NOTES) $(SEGMENTS_DATA_DIR)
 
 # pass_thru because good-sounds already has notes
 $(GOODSOUNDS_NOTES): $(GOODSOUNDS_INDEX)
-	$(PYTHON) scripts/segment_audio.py $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES) --pass_thru
+	$(PYTHON) scripts/split_audio_to_clips.py $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES) --pass_thru
 
 
 uiowa: $(UIOWA_INDEX) $(UIOWA_NOTES)
