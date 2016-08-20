@@ -3,6 +3,7 @@ import pytest
 import os
 import pandas as pd
 
+import minst.model as model
 import minst.utils as utils
 import split_audio_to_clips as SC
 
@@ -30,7 +31,10 @@ def test_audio_to_observations(uiowa_root, onset_root, workspace):
 
     onset_df = pd.read_csv(onset_file)
     assert len(observations) == len(onset_df)
-    for obs in observations:
+
+    coll = model.Collection(observations, output_dir)
+    assert coll.validate(verbose=True)
+    for obs in coll.values():
         obs.instrument == 'Tuba'
 
     assert len(set([obs.index for obs in observations])) == len(observations)

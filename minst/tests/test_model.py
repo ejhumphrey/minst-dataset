@@ -42,11 +42,13 @@ def test_Observation_validate(raw_obs):
 
 
 def test_Collection___init__(raw_obs):
-    dset = model.Collection([raw_obs])
-    assert len(dset)
+    obs = model.Observation(**raw_obs)
+    dset = model.Collection([obs])
+    assert len(dset) == 1
 
 
 def test_Collection_to_dataframe(raw_obs):
-    dset = model.Collection([raw_obs]).to_dataframe()
+    obs = model.Observation(**raw_obs)
+    dset = model.Collection([obs]).to_dataframe()
     assert len(dset) == 1
-    assert dset.index[0] == raw_obs['index']
+    assert dset.index[0] == obs.index

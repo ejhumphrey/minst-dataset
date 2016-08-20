@@ -15,8 +15,8 @@ class Observation(object):
     SCHEMA = json.load(open(SCHEMA_PATH))
 
     def __init__(self, index, dataset, audio_file, instrument, source_index,
-                 start_time, duration, note_number=None, dynamic=None,
-                 partition=None):
+                 start_time, duration, note_number=None, dynamic='',
+                 partition=''):
         """Model definition for an instrument observation.
 
         Parameters
@@ -67,34 +67,45 @@ class Observation(object):
         index = obj.pop('index')
         return index, obj
 
-    def validate(self, schema=None):
+    def validate(self, schema=None, verbose=False):
         schema = self.SCHEMA if schema is None else schema
         success = True
         try:
             jsonschema.validate(self.to_builtin(), schema)
-        except jsonschema.ValidationError:
+        except jsonschema.ValidationError as derp:
             success = False
+            if verbose:
+                print("Failed schema test: \n{}".format(derp))
         success &= os.path.exists(self.audio_file)
         if success:
             success &= utils.check_audio_file(self.audio_file)[0]
+            if not success and verbose:
+                print("Failed file check: \n{}".format(self.audio_file))
 
         return success
 
 
 class Collection(object):
-    MODEL = Observation
+    """Expands relative audio files to a given `audio_root` path.
+    """
+    # MODEL = Observation
 
-    def __init__(self, values):
-        self._values = [self.MODEL(**v) for v in values]
+    def __init__(self, values, audio_root=''):
+        # TODO: Make this a little jamsy
+        # self._values = [self.MODEL(**v) for v in values]
+        self._values = values
+        self.audio_root = audio_root
+        for v in self._values:
+            v.audio_file = os.path.join(audio_root, v.audio_file)
 
     def items(self):
-        return [(v.index, v) for v in self._values]
+        return [(v.index, v) for v in self.values()]
 
     def values(self):
         return self._values
 
     def keys(self):
-        return [v.index for v in self._values]
+        return [v.index for v in self.values()]
 
     def to_builtin(self):
         return [v.to_builtin() for v in self.values()]
@@ -107,8 +118,8 @@ class Collection(object):
         with open(filename) as fp:
             json.dump(self.values(), fp)
 
-    def validate(self):
-        return any([o.validate() for o in self.values()])
+    def validate(self, verbose=False):
+        return any([o.validate(verbose=verbose) for o in self.values()])
 
     def to_dataframe(self):
         irecords = [obs.to_record() for obs in self.values()]
