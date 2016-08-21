@@ -126,7 +126,9 @@ def safe_obs(obs, data_root=None):
 
 
 class Collection(object):
-    """Expands relative audio files to a given `audio_root` path.
+    """Dictionary-like collection of Observations (maintains order).
+
+    Expands relative audio files to a given `audio_root` path.
     """
     # MODEL = Observation
 
@@ -153,6 +155,9 @@ class Collection(object):
 
     def keys(self):
         return [v.index for v in self.values()]
+
+    def append(self, observation):
+        self._observations += [observation]
 
     def to_builtin(self):
         return [v.to_builtin() for v in self.values()]

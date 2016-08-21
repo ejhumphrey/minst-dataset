@@ -79,10 +79,16 @@ def test_Observation_validate(raw_obs):
     assert not obs.validate()
 
 
-def test_Collection___init__(raw_obs):
-    obs = model.Observation(**raw_obs)
-    dset = model.Collection([obs])
-    assert len(dset) == 1
+def test_Collection___init__(test_obs):
+    dset = model.Collection(test_obs)
+    assert len(dset) == len(test_obs)
+
+
+def test_Collection_items(test_obs):
+    dset = model.Collection(test_obs)
+    items = dset.items()
+    assert len(items) == len(test_obs)
+    assert [x[0] for x in items] == [y['index'] for y in test_obs]
 
 
 def test_Collection_to_dataframe(raw_obs):
