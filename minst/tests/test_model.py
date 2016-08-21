@@ -57,6 +57,12 @@ def test_Observation_to_series(raw_obs):
     assert rec.instrument == raw_obs['instrument']
 
 
+def test_Observation_to_dict(raw_obs):
+    obs = model.Observation(**raw_obs)
+    rec_obs = obs.to_dict()
+    assert rec_obs == raw_obs
+
+
 def test_Observation_validate(raw_obs):
     obs = model.Observation(**raw_obs)
     assert obs.SCHEMA
