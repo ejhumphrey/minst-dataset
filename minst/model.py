@@ -210,8 +210,10 @@ class Collection(object):
     def to_dataframe(self):
         return pd.DataFrame([x.to_series() for x in self.values()])
 
-    def from_dataframe(self, dframe):
-        pass
+    @classmethod
+    def from_dataframe(cls, dframe, audio_root=''):
+        return cls([Observation.from_series(x) for _, x in dframe.iterrows()],
+                   audio_root=audio_root)
 
     def copy(self, deep=True):
         return Collection(copy.deepcopy(self._observations))

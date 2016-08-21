@@ -145,6 +145,14 @@ def test_Collection_to_dataframe(test_obs):
     assert dset.index[0] == test_obs[0]['index']
 
 
+def test_Collection_from_dataframe(test_obs):
+    index = [x.pop('index') for x in test_obs]
+    df = pd.DataFrame.from_records(test_obs, index=index)
+    dset = model.Collection.from_dataframe(df)
+    assert len(dset) == 3
+    assert df.ix[0].name == dset[0].index
+
+
 def test_Collection_view(test_obs):
     ds = model.Collection(test_obs)
     rwc_view = ds.view("rwc")
