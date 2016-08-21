@@ -63,6 +63,11 @@ def test_Observation_to_dict(raw_obs):
     assert rec_obs == raw_obs
 
 
+def test_Observation___get_item__(raw_obs):
+    obs = model.Observation(**raw_obs)
+    assert obs['index'] == obs.index == raw_obs['index']
+
+
 def test_Observation_validate(raw_obs):
     obs = model.Observation(**raw_obs)
     assert obs.SCHEMA
