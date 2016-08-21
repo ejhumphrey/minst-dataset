@@ -71,21 +71,9 @@ class Observation(object):
         return self.__dict__.copy()
 
     @classmethod
-    def from_record(cls, record):
-        """Convert a record (pd.Series from a DF) to an Observation."""
-        return cls(index=record.name, **record.to_dict())
-
-    def to_record(self):
-        """Returns the observation as an (index, record) tuple."""
-        obj = self.to_builtin()
-        index = obj.pop('index')
-        return index, obj
-
-    def to_dict(self):
-        return self.__dict__.copy()
-
-    def __getitem__(self, key):
-        return self.__dict__[key]
+    def from_series(cls, series):
+        """Convert a pd.Series to an Observation."""
+        return cls(index=series.name, **series.to_dict())
 
     def to_series(self):
         """Convert to a flat series (ie make features a column)
@@ -95,9 +83,14 @@ class Observation(object):
         pandas.Series
         """
         flat_dict = self.to_dict()
-        # TODO: necessary?
-        flat_dict.update(**flat_dict.pop("features"))
-        return pd.Series(flat_dict)
+        name = flat_dict.pop("index")
+        return pd.Series(data=flat_dict, name=name)
+
+    def to_dict(self):
+        return self.__dict__.copy()
+
+    def __getitem__(self, key):
+        return self.__dict__[key]
 
     def validate(self, schema=None, verbose=False):
         schema = self.SCHEMA if schema is None else schema

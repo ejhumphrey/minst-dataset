@@ -41,20 +41,20 @@ def test_Observation_to_builtin(raw_obs):
     assert obs.to_builtin() == raw_obs
 
 
-def test_Observation_from_record(test_obs):
+def test_Observation_from_series(test_obs):
     index = [x.pop('index') for x in test_obs]
     df = pd.DataFrame.from_records(test_obs, index=index)
     # import pdb;pdb.set_trace()
-    obs = model.Observation.from_record(df.ix[0])
+    obs = model.Observation.from_series(df.ix[0])
     assert obs.index == index[0]
     assert obs.instrument == 'tuba'
 
 
-def test_Observation_to_record(raw_obs):
+def test_Observation_to_series(raw_obs):
     obs = model.Observation(**raw_obs)
-    idx, rec = obs.to_record()
-    assert idx == raw_obs['index']
-    assert 'index' not in rec
+    rec = obs.to_series()
+    assert rec.name == raw_obs['index']
+    assert rec.instrument == raw_obs['instrument']
 
 
 def test_Observation_validate(raw_obs):
