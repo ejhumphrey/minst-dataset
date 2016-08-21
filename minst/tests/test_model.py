@@ -19,14 +19,14 @@ def raw_obs(rwc_root):
 def test_obs():
     obs = [
         dict(index="abc123", dataset="rwc", audio_file="foo_00.aiff",
-             instrument="tuba", source_index="001", start_time=None,
-             duration=None, note_number="A4", dynamic="pp", partition=None),
+             instrument="tuba", source_index="001", start_time=0.0,
+             duration=1.0, note_number=None, dynamic="pp", partition=None),
         dict(index="abc234", dataset="uiowa", audio_file="foo_01.aiff",
-             instrument="horn-french", source_index="001", start_time=None,
-             duration=None, note_number="A4", dynamic="pp", partition=None),
+             instrument="horn-french", source_index="001", start_time=0.0,
+             duration=1.0, note_number=None, dynamic="pp", partition=None),
         dict(index="def123", dataset="philharmonia", audio_file="foo_02.aiff",
-             instrument="tuba", source_index="001", start_time=None,
-             duration=None, note_number="A4", dynamic="pp", partition=None)
+             instrument="tuba", source_index="001", start_time=0.0,
+             duration=1.0, note_number=None, dynamic="pp", partition=None)
     ]
     return obs
 
@@ -68,7 +68,7 @@ def test_Observation___get_item__(raw_obs):
     assert obs['index'] == obs.index == raw_obs['index']
 
 
-def test_Observation_validate(raw_obs):
+def test_Observation_validate(raw_obs, test_obs):
     obs = model.Observation(**raw_obs)
     assert obs.SCHEMA
 
@@ -78,8 +78,16 @@ def test_Observation_validate(raw_obs):
     obs = model.Observation(**raw_obs)
     assert not obs.validate()
 
+    for o in test_obs:
+        assert model.Observation(**o).validate(verbose=True, check_files=False)
+
 
 def test_Collection___init__(test_obs):
+    dset = model.Collection(test_obs)
+    assert dset is not None
+
+
+def test_Collection___len__(test_obs):
     dset = model.Collection(test_obs)
     assert len(dset) == len(test_obs)
 
@@ -122,11 +130,19 @@ def test_Collection_to_read_json(test_obs, workspace):
     assert dset == new_dset
 
 
-def test_Collection_to_dataframe(raw_obs):
-    obs = model.Observation(**raw_obs)
-    dset = model.Collection([obs]).to_dataframe()
-    assert len(dset) == 1
-    assert dset.index[0] == obs.index
+def test_Collection_validate(test_obs, raw_obs):
+    dset = model.Collection(test_obs)
+    assert dset.validate(verbose=True, check_files=False)
+
+    raw_obs['duration'] = 'abcdef'
+    dset.append(raw_obs)
+    assert not dset.validate(verbose=True)
+
+
+def test_Collection_to_dataframe(test_obs):
+    dset = model.Collection(test_obs).to_dataframe()
+    assert len(dset) == 3
+    assert dset.index[0] == test_obs[0]['index']
 
 
 def test_Collection_view(test_obs):

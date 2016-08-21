@@ -92,7 +92,9 @@ class Observation(object):
     def __getitem__(self, key):
         return self.__dict__[key]
 
-    def validate(self, schema=None, verbose=False):
+    def validate(self, schema=None, verbose=False, check_files=True):
+        """Returns True if valid.
+        """
         schema = self.SCHEMA if schema is None else schema
         success = True
         try:
@@ -101,8 +103,7 @@ class Observation(object):
             success = False
             if verbose:
                 print("Failed schema test: \n{}".format(derp))
-        success &= os.path.exists(self.audio_file)
-        if success:
+        if success and check_files:
             success &= utils.check_audio_file(self.audio_file)[0]
             if not success and verbose:
                 print("Failed file check: \n{}".format(self.audio_file))
@@ -201,8 +202,10 @@ class Collection(object):
         else:
             return sdata
 
-    def validate(self, verbose=False):
-        return any([x.validate(verbose=verbose) for x in self.values()])
+    def validate(self, verbose=False, check_files=True):
+        """Returns True if all are valid."""
+        return all([x.validate(verbose=verbose, check_files=check_files)
+                    for x in self.values()])
 
     def to_dataframe(self):
         irecords = [x.to_record() for x in self.values()]
