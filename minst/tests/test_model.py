@@ -7,9 +7,9 @@ import minst.model as model
 
 
 @pytest.fixture
-def raw_obs(rwc_root):
-    afile = os.path.join(rwc_root, "RWC_I_01/011/011PFNOP.flac")
-    return dict(index='U1309f091', dataset='uiowa', audio_file=afile,
+def rwc_obs():
+    return dict(index='U1309f091', dataset='uiowa',
+                audio_file="RWC_I_01/011/011PFNOP.flac",
                 instrument='piano', source_index='U12345',
                 start_time=0.0, duration=2, note_number=45,
                 dynamic='pp', partition='test-0')
@@ -31,14 +31,14 @@ def test_obs():
     return obs
 
 
-def test_Observation___init__(raw_obs):
-    obs = model.Observation(**raw_obs)
+def test_Observation___init__(rwc_obs):
+    obs = model.Observation(**rwc_obs)
     assert obs
 
 
-def test_Observation_to_builtin(raw_obs):
-    obs = model.Observation(**raw_obs)
-    assert obs.to_builtin() == raw_obs
+def test_Observation_to_builtin(rwc_obs):
+    obs = model.Observation(**rwc_obs)
+    assert obs.to_builtin() == rwc_obs
 
 
 def test_Observation_from_series(test_obs):
@@ -50,40 +50,66 @@ def test_Observation_from_series(test_obs):
     assert obs.instrument == 'tuba'
 
 
-def test_Observation_to_series(raw_obs):
-    obs = model.Observation(**raw_obs)
+def test_Observation_to_series(rwc_obs):
+    obs = model.Observation(**rwc_obs)
     rec = obs.to_series()
-    assert rec.name == raw_obs['index']
-    assert rec.instrument == raw_obs['instrument']
+    assert rec.name == rwc_obs['index']
+    assert rec.instrument == rwc_obs['instrument']
 
 
-def test_Observation_to_dict(raw_obs):
-    obs = model.Observation(**raw_obs)
+def test_Observation_to_dict(rwc_obs):
+    obs = model.Observation(**rwc_obs)
     rec_obs = obs.to_dict()
-    assert rec_obs == raw_obs
+    assert rec_obs == rwc_obs
 
 
-def test_Observation___get_item__(raw_obs):
-    obs = model.Observation(**raw_obs)
-    assert obs['index'] == obs.index == raw_obs['index']
+def test_Observation___get_item__(rwc_obs):
+    obs = model.Observation(**rwc_obs)
+    assert obs['index'] == obs.index == rwc_obs['index']
 
 
-def test_Observation_validate(raw_obs, test_obs):
-    obs = model.Observation(**raw_obs)
+def test_Observation_validate(rwc_root, rwc_obs, test_obs):
+    obs = model.Observation(**rwc_obs)
     assert obs.SCHEMA
+    assert not obs.validate()
+    assert obs.validate(check_files=False)
 
+    rwc_obs['audio_file'] = os.path.join(rwc_root, rwc_obs['audio_file'])
+    obs = model.Observation(**rwc_obs)
     assert obs.validate()
-    raw_obs['audio_file'] = ("dummy_philharmonia/www.philharmonia.co.uk/"
+
+    rwc_obs['audio_file'] = ("dummy_philharmonia/www.philharmonia.co.uk/"
                              "assets/audio/samples/instruments/cello.zip")
-    obs = model.Observation(**raw_obs)
+    obs = model.Observation(**rwc_obs)
     assert not obs.validate()
 
     for o in test_obs:
         assert model.Observation(**o).validate(verbose=True, check_files=False)
 
 
-def test_Collection___init__(test_obs):
+def test__enforce_obs(rwc_obs, rwc_root):
+    obs = model._enforce_obs(rwc_obs, strict=False)
+    assert obs is not None
+
+    with pytest.raises(model.MissingDataException):
+        model._enforce_obs(rwc_obs, strict=True)
+
+    obs = model._enforce_obs(rwc_obs, audio_root=rwc_root, strict=False)
+    assert obs is not None
+
+
+def test_Collection___init__(test_obs, rwc_obs, rwc_root):
     dset = model.Collection(test_obs)
+    assert dset is not None
+
+    with pytest.raises(model.MissingDataException):
+        dset = model.Collection(test_obs, strict=True)
+
+    obs = model.Observation(**rwc_obs)
+    with pytest.raises(model.MissingDataException):
+        dset = model.Collection([obs], audio_root='', strict=True)
+
+    dset = model.Collection([obs], audio_root=rwc_root, strict=True)
     assert dset is not None
 
 
@@ -107,10 +133,10 @@ def test_Collection_items(test_obs):
     assert [x[0] for x in items] == [y['index'] for y in test_obs]
 
 
-def test_Collection_append(test_obs, raw_obs):
+def test_Collection_append(test_obs, rwc_obs):
     dset = model.Collection(test_obs)
     assert len(dset) == len(test_obs)
-    dset.append(raw_obs)
+    dset.append(rwc_obs)
     assert len(dset) == len(test_obs) + 1
 
 
@@ -130,12 +156,12 @@ def test_Collection_to_read_json(test_obs, workspace):
     assert dset == new_dset
 
 
-def test_Collection_validate(test_obs, raw_obs):
+def test_Collection_validate(test_obs, rwc_obs):
     dset = model.Collection(test_obs)
     assert dset.validate(verbose=True, check_files=False)
 
-    raw_obs['duration'] = 'abcdef'
-    dset.append(raw_obs)
+    rwc_obs['duration'] = 'abcdef'
+    dset.append(rwc_obs)
     assert not dset.validate(verbose=True)
 
 

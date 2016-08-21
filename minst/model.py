@@ -111,20 +111,21 @@ class Observation(object):
         return success
 
 
-def safe_obs(obs, audio_root=''):
+def _enforce_obs(obs, audio_root='', strict=True):
     """Get dict from an Observation if an observation, else just dict"""
-    if not os.path.exists(obs['audio_file']) and audio_root:
-        if not os.path.exists(audio_root):
-            raise MissingDataException(
-                "Input data {} missing; have you extracted the zip?")
-        if not obs['audio_file'].startswith(audio_root):
-            new_audio = os.path.join(audio_root, obs['audio_file'])
-        if os.path.exists(new_audio):
-            obs['audio_file'] = new_audio
+    audio_file = obs['audio_file']
+    escaped_audio_file = os.path.join(audio_root, audio_file)
+    file_checks = [os.path.exists(audio_file),
+                   os.path.exists(escaped_audio_file)]
+    if not any(file_checks) and strict:
+        raise MissingDataException(
+            "Audio file(s) missing:\n\tbase: {}\n\tescaped:{}"
+            "".format(audio_file, escaped_audio_file))
+
     if isinstance(obs, Observation):
-        return obs.to_dict()
-    else:
-        return obs
+        obs = obs.to_dict()
+    obs['audio_file'] = escaped_audio_file if file_checks[1] else audio_file
+    return obs
 
 
 class Collection(object):
@@ -134,7 +135,7 @@ class Collection(object):
     """
     # MODEL = Observation
 
-    def __init__(self, observations, audio_root=''):
+    def __init__(self, observations, audio_root='', strict=False):
         """
         Parameters
         ----------
@@ -145,9 +146,11 @@ class Collection(object):
         data_root : str or None
             Path to look for an observation, if not None
         """
-        self._observations = [Observation(**safe_obs(x, audio_root))
+        self._observations = [Observation(**_enforce_obs(x, audio_root,
+                                                         strict))
                               for x in observations]
         self.audio_root = audio_root
+        self.strict = strict
 
     def __eq__(self, a):
         is_eq = False
@@ -173,7 +176,7 @@ class Collection(object):
 
     def append(self, observation, audio_root=None):
         audio_root = self.audio_root if audio_root is None else audio_root
-        obs = safe_obs(observation, audio_root)
+        obs = _enforce_obs(observation, audio_root, self.strict)
         self._observations += [Observation(**obs)]
 
     def to_builtin(self):
