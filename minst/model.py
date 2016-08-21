@@ -208,12 +208,7 @@ class Collection(object):
                     for x in self.values()])
 
     def to_dataframe(self):
-        irecords = [x.to_record() for x in self.values()]
-        return pd.DataFrame.from_records(
-            [ir[1] for ir in irecords],
-            index=[ir[0] for ir in irecords])
-        # TODO: prefer CBJ style?
-        # return pandas.DataFrame([x.to_series() for x in self.observations])
+        return pd.DataFrame([x.to_series() for x in self.values()])
 
     def from_dataframe(self, dframe):
         pass
