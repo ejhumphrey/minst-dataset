@@ -98,6 +98,12 @@ def test_Collection_append(test_obs, raw_obs):
     assert len(dset) == len(test_obs) + 1
 
 
+def test_Collection_to_builtin(test_obs):
+    dset = model.Collection(test_obs)
+    rec_obs = dset.to_builtin()
+    assert rec_obs == test_obs
+
+
 def test_Collection_to_dataframe(raw_obs):
     obs = model.Observation(**raw_obs)
     dset = model.Collection([obs]).to_dataframe()
