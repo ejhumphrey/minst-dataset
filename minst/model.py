@@ -156,8 +156,10 @@ class Collection(object):
     def keys(self):
         return [v.index for v in self.values()]
 
-    def append(self, observation):
-        self._observations += [observation]
+    def append(self, observation, audio_root=None):
+        audio_root = self.audio_root if audio_root is None else audio_root
+        obs = safe_obs(observation, audio_root)
+        self._observations += [Observation(**obs)]
 
     def to_builtin(self):
         return [v.to_builtin() for v in self.values()]
