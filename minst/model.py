@@ -73,16 +73,7 @@ class Observation(object):
     @classmethod
     def from_record(cls, record):
         """Convert a record (pd.Series from a DF) to an Observation."""
-        return cls(index=record.index[0][0],
-                   dataset=record['dataset'][0],
-                   audio_file=record['audio_file'][0],
-                   instrument=record['instrument'][0],
-                   source_key="",
-                   start_time=0.0,
-                   duration=0.0,
-                   note_number=record['note'][0],
-                   dynamic=record['dynamic'][0],
-                   partition="")
+        return cls(index=record.name, **record.to_dict())
 
     def to_record(self):
         """Returns the observation as an (index, record) tuple."""

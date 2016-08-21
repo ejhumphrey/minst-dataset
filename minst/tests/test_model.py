@@ -1,5 +1,7 @@
 import pytest
+
 import os
+import pandas as pd
 
 import minst.model as model
 
@@ -13,6 +15,22 @@ def raw_obs(rwc_root):
                 dynamic='pp', partition='test-0')
 
 
+@pytest.fixture
+def test_obs():
+    obs = [
+        dict(index="abc123", dataset="rwc", audio_file="foo_00.aiff",
+             instrument="tuba", source_index="001", start_time=None,
+             duration=None, note_number="A4", dynamic="pp", partition=None),
+        dict(index="abc234", dataset="uiowa", audio_file="foo_01.aiff",
+             instrument="horn-french", source_index="001", start_time=None,
+             duration=None, note_number="A4", dynamic="pp", partition=None),
+        dict(index="def123", dataset="philharmonia", audio_file="foo_02.aiff",
+             instrument="tuba", source_index="001", start_time=None,
+             duration=None, note_number="A4", dynamic="pp", partition=None)
+    ]
+    return obs
+
+
 def test_Observation___init__(raw_obs):
     obs = model.Observation(**raw_obs)
     assert obs
@@ -21,6 +39,15 @@ def test_Observation___init__(raw_obs):
 def test_Observation_to_builtin(raw_obs):
     obs = model.Observation(**raw_obs)
     assert obs.to_builtin() == raw_obs
+
+
+def test_Observation_from_record(test_obs):
+    index = [x.pop('index') for x in test_obs]
+    df = pd.DataFrame.from_records(test_obs, index=index)
+    # import pdb;pdb.set_trace()
+    obs = model.Observation.from_record(df.ix[0])
+    assert obs.index == index[0]
+    assert obs.instrument == 'tuba'
 
 
 def test_Observation_to_record(raw_obs):
@@ -52,3 +79,9 @@ def test_Collection_to_dataframe(raw_obs):
     dset = model.Collection([obs]).to_dataframe()
     assert len(dset) == 1
     assert dset.index[0] == obs.index
+
+
+def test_Collection_view(test_obs):
+    ds = model.Collection(test_obs)
+    rwc_view = ds.view("rwc")
+    assert set(rwc_view["dataset"].unique()) == set(["rwc"])
