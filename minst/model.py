@@ -147,6 +147,19 @@ class Collection(object):
                               for x in observations]
         self.audio_root = audio_root
 
+    def __eq__(self, a):
+        is_eq = False
+        if hasattr(a, 'to_builtin'):
+            is_eq = self.to_builtin() == a.to_builtin()
+        return is_eq
+
+    def __len__(self):
+        return len(self.values())
+
+    def __getitem__(self, n):
+        """Return the observation for a given integer index."""
+        return self._observations[n]
+
     def items(self):
         return [(v.index, v) for v in self.values()]
 
@@ -165,17 +178,28 @@ class Collection(object):
         return [v.to_builtin() for v in self.values()]
 
     @classmethod
-    def read_json(cls, json_path, data_root=None):
-        if os.path.exists(json_path):
-            with open(json_path, 'r') as fh:
-                return cls(json.load(fh), data_root=data_root)
-        else:
-            logger.error("No dataset available at {}".format(json_path))
-            return None
+    def read_json(cls, json_path, audio_root=''):
+        with open(json_path, 'r') as fh:
+            return cls(json.load(fh), audio_root=audio_root)
 
-    def save_json(self, json_path):
-        with open(json_path, 'w') as fh:
-            json.dump(self.to_builtin(), fh)
+    def to_json(self, json_path=None, **kwargs):
+        """Pandas-like `to_json` method.
+
+        Parameters
+        ----------
+        json_path : str, or None
+            If given, will attempt to write JSON to disk; else returns a string
+            of serialized data.
+
+        **kwargs : keyword args
+            Pass-through parameters to the JSON serializer.
+        """
+        sdata = json.dumps(self.to_builtin(), **kwargs)
+        if json_path is not None:
+            with open(json_path, 'w') as fh:
+                fh.write(sdata)
+        else:
+            return sdata
 
     def validate(self, verbose=False):
         return any([x.validate(verbose=verbose) for x in self.values()])
@@ -190,12 +214,6 @@ class Collection(object):
 
     def from_dataframe(self, dframe):
         pass
-
-    def __len__(self):
-        return len(self.values())
-
-    def __getitem__(self, index):
-        return self._observations[index]
 
     def copy(self, deep=True):
         return Collection(copy.deepcopy(self._observations))

@@ -84,6 +84,14 @@ def test_Collection___init__(test_obs):
     assert len(dset) == len(test_obs)
 
 
+def test_Collection___eq__(test_obs):
+    dset = model.Collection(test_obs)
+    dset2 = model.Collection(test_obs)
+    assert dset == dset2
+    assert dset != test_obs
+    assert dset is not None
+
+
 def test_Collection_items(test_obs):
     dset = model.Collection(test_obs)
     items = dset.items()
@@ -102,6 +110,16 @@ def test_Collection_to_builtin(test_obs):
     dset = model.Collection(test_obs)
     rec_obs = dset.to_builtin()
     assert rec_obs == test_obs
+
+
+def test_Collection_to_read_json(test_obs, workspace):
+    dset = model.Collection(test_obs)
+    json_path = os.path.join(workspace, "dummy_collection.json")
+    sdata = dset.to_json()
+    assert sdata is not None
+    dset.to_json(json_path)
+    new_dset = dset.read_json(json_path)
+    assert dset == new_dset
 
 
 def test_Collection_to_dataframe(raw_obs):
