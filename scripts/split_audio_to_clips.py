@@ -23,7 +23,7 @@ Options:
  --limit=N_FILES  Limit to procesing N_FILES for testing.
 """
 from __future__ import print_function
-import boltons.fileutils
+# import boltons.fileutils
 import claudio
 from docopt import docopt
 import logging
@@ -37,7 +37,7 @@ import minst.logger
 import minst.model as model
 import minst.utils as utils
 
-logger = logging.getLogger("segment_audio")
+logger = logging.getLogger("split_audio_to_clips")
 
 PRINT_PROGRESS = True
 
@@ -84,10 +84,10 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
     onsets.loc[onsets.size] = max_length
 
     # Make sure it's sorted by time now.
+    # TODO: Do we really want to drop the index here?
     onsets = onsets.sort_values('time').reset_index(drop=True)
-
+    logger.debug("Attempting to generate {} observations".format(len(onsets)))
     observations = []
-
     # for each pair of onsets
     for i in range(len(onsets) - 1):
         start_time = onsets.iloc[i]['time']
@@ -104,7 +104,9 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
         # split to a new file
         success = claudio.sox.trim(
             audio_file, output_file, start_time, end_time)
-
+        logger.debug("Success={} || {}[{}:{}] -> {}"
+                     "".format(success, audio_file, start_time, end_time,
+                               output_file))
         if success:
             clip_index = utils.generate_id(
                 input_base, "{}-{}".format(start_time, end_time), hash_len=6)
@@ -114,6 +116,7 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
                 source_index=index, start_time=start_time,
                 duration=end_time - start_time, **meta)
             observations.append(obs)
+            logger.debug("New Observation: {}".format(obs.to_builtin()))
 
     return observations
 
@@ -152,6 +155,7 @@ def audio_collection_to_observations(segment_index_file, note_index_file,
         # other datasets, even if this one
         return True
 
+    utils.create_directory(note_audio_dir)
     count = 0
     observations = []
     for idx, row in segment_df.iterrows():
@@ -183,89 +187,89 @@ def audio_collection_to_observations(segment_index_file, note_index_file,
     return os.path.exists(note_index_file)
 
 
-def segment_audio(segment_index_file, note_index_file, note_audio_dir,
-                  limit_n_files=None):
-    """
-    Parameters
-    ----------
-    segment_index_file : str
-        Input file containing all pointers to audio files and
-        onsets files.
+# def segment_audio(segment_index_file, note_index_file, note_audio_dir,
+#                   limit_n_files=None):
+#     """
+#     Parameters
+#     ----------
+#     segment_index_file : str
+#         Input file containing all pointers to audio files and
+#         onsets files.
 
-    note_index_file: str
-        Path to the output index file which will contain pointers
-        to the output note audio, and the metadata relating to it.
+#     note_index_file: str
+#         Path to the output index file which will contain pointers
+#         to the output note audio, and the metadata relating to it.
 
-    note_audio_dir : str
-        Path to store the resulting audio file.
+#     note_audio_dir : str
+#         Path to store the resulting audio file.
 
 
-    """
-    logger.info("Begin segment_audio()")
-    logger.debug("Loading segment index")
-    segment_df = pd.read_csv(segment_index_file, index_col=0)
-    logger.debug("loaded {} records.".format(
-        len(segment_df)))
-    if segment_df.empty:
-        logger.warning(utils.colorize(
-            "No data available in {}; exiting.".format(segment_index_file),
-            color='red'))
-        # Here, we sys.exit 0 so the makefile will continue to build
-        # other datasets, even if this one
-        sys.exit(0)
+#     """
+#     logger.info("Begin segment_audio()")
+#     logger.debug("Loading segment index")
+#     segment_df = pd.read_csv(segment_index_file, index_col=0)
+#     logger.debug("loaded {} records.".format(
+#         len(segment_df)))
+#     if segment_df.empty:
+#         logger.warning(utils.colorize(
+#             "No data available in {}; exiting.".format(segment_index_file),
+#             color='red'))
+#         # Here, we sys.exit 0 so the makefile will continue to build
+#         # other datasets, even if this one
+#         sys.exit(0)
 
-    # If we're passing through, keep all of them.
-    if not pass_through:
-        segment_df = segment_df[segment_df['onsets_file'].notnull()]
-        logger.debug("Filtered {} records without onset files.".format(
-            len(segment_df)))
+#     # If we're passing through, keep all of them.
+#     if not pass_through:
+#         segment_df = segment_df[segment_df['onsets_file'].notnull()]
+#         logger.debug("Filtered {} records without onset files.".format(
+#             len(segment_df)))
 
-        # Also, if passing through we don't need this.
-        boltons.fileutils.mkdir_p(note_audio_dir)
+#         # Also, if passing through we don't need this.
+#         boltons.fileutils.mkdir_p(note_audio_dir)
 
-    # pass_through and not pass_through are separated to keep
-    # them as fast as possible.
-    if pass_through:
-        # This adds a zero to the index so it matches the format
-        # of the multiindex.
-        notes_df = segment_df.copy().set_index(
-            [segment_df.index.tolist(), [0] * len(segment_df)])
-        note_files = notes_df['audio_file']
-        notes_df['note_file'] = note_files
-    else:
-        notes_index = pd.MultiIndex(levels=[[], []],
-                                    labels=[[], []],
-                                    names=['hash', 'note_idx'])
-        notes_columns = segment_df.columns.tolist() + ['note_file']
-        notes_df = pd.DataFrame(columns=notes_columns, index=notes_index)
-        count = 0
-        for idx, row in segment_df.iterrows():
-            audio_file = row['audio_file']
-            onsets_file = row['onsets_file']
-            note_files = split_audio_with_onsets(
-                audio_file, onsets_file, note_audio_dir)
-            logger.debug("Generated {} note files ({} of {}).".format(
-                len(note_files), (count + 1), len(segment_df)))
+#     # pass_through and not pass_through are separated to keep
+#     # them as fast as possible.
+#     if pass_through:
+#         # This adds a zero to the index so it matches the format
+#         # of the multiindex.
+#         notes_df = segment_df.copy().set_index(
+#             [segment_df.index.tolist(), [0] * len(segment_df)])
+#         note_files = notes_df['audio_file']
+#         notes_df['note_file'] = note_files
+#     else:
+#         notes_index = pd.MultiIndex(levels=[[], []],
+#                                     labels=[[], []],
+#                                     names=['hash', 'note_idx'])
+#         notes_columns = segment_df.columns.tolist() + ['note_file']
+#         notes_df = pd.DataFrame(columns=notes_columns, index=notes_index)
+#         count = 0
+#         for idx, row in segment_df.iterrows():
+#             audio_file = row['audio_file']
+#             onsets_file = row['onsets_file']
+#             note_files = split_audio_with_onsets(
+#                 audio_file, onsets_file, note_audio_dir)
+#             logger.debug("Generated {} note files ({} of {}).".format(
+#                 len(note_files), (count + 1), len(segment_df)))
 
-            for i, x in enumerate(note_files):
-                notes_df.loc[(idx, i), :] = row.tolist() + [x]
-            if PRINT_PROGRESS:
-                print("Progress: {:0.1f}% ({} of {})\r".format(
-                    (((count + 1) / float(len(segment_df))) * 100.),
-                    (count + 1), len(segment_df)), end='')
-                sys.stdout.flush()
-            count += 1
+#             for i, x in enumerate(note_files):
+#                 notes_df.loc[(idx, i), :] = row.tolist() + [x]
+#             if PRINT_PROGRESS:
+#                 print("Progress: {:0.1f}% ({} of {})\r".format(
+#                     (((count + 1) / float(len(segment_df))) * 100.),
+#                     (count + 1), len(segment_df)), end='')
+#                 sys.stdout.flush()
+#             count += 1
 
-            if limit_n_files and count >= limit_n_files:
-                break
+#             if limit_n_files and count >= limit_n_files:
+#                 break
 
-        if PRINT_PROGRESS:
-            print()
+#         if PRINT_PROGRESS:
+#             print()
 
-    notes_df.to_csv(note_index_file)
-    logger.debug("Wrote note index to {} with {} records".format(
-        note_index_file, len(notes_df)))
-    logger.info("Completed segment_audio()")
+#     notes_df.to_csv(note_index_file)
+#     logger.debug("Wrote note index to {} with {} records".format(
+#         note_index_file, len(notes_df)))
+#     logger.info("Completed segment_audio()")
 
 
 if __name__ == "__main__":
@@ -276,10 +280,12 @@ if __name__ == "__main__":
     PRINT_PROGRESS = not arguments['--verbose']
 
     t0 = time.time()
-    segment_audio(arguments['<segment_index>'],
-                  arguments['<note_index>'],
-                  arguments['<note_audio_dir>'],
-                  arguments['--pass_thru'],
-                  int(arguments['--limit']) if arguments['--limit'] else None)
+    audio_collection_to_observations(
+        arguments['<segment_index>'],
+        arguments['<note_index>'],
+        arguments['<note_audio_dir>'],
+        # arguments['--pass_thru'],
+        int(arguments['--limit']) if arguments['--limit'] else None)
     t_end = time.time()
-    print("segment_audio completed in: {}s".format(t_end - t0))
+    print("segmented audio collection to observations completed in: {}s"
+          "".format(t_end - t0))
