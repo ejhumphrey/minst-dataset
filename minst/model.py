@@ -248,8 +248,8 @@ def load(filename, audio_root):
     return Collection.load(filename)
 
 
-def parition(collection, test_set, train_val_split=0.2,
-             max_files_per_class=None):
+def partition_collection(collection, test_set, train_val_split=0.2,
+                         max_files_per_class=None):
     """Returns Datasets for train and validation constructed
     from the datasets not in the test_set, and split with
     the ratio train_val_split.
@@ -269,10 +269,11 @@ def parition(collection, test_set, train_val_split=0.2,
 
     Returns
     -------
-    train_df, valid_df, test_df : pandas.DataFrame
+    train_df, valid_df, test_df : pd.DataFrame
         DataFrames of observations for train, validation, and test.
     """
     df = collection.to_dataframe()
+    df_test = collection.view(column='dataset', filter_value=test_set)
     datasets = set(df["dataset"].unique()) - set([test_set])
     search_df = df[df["dataset"].isin(datasets)]
 
@@ -298,4 +299,5 @@ def parition(collection, test_set, train_val_split=0.2,
         selected_instruments_valid.append(validdf)
 
     return (pd.concat(selected_instruments_train),
-            pd.concat(selected_instruments_valid))
+            pd.concat(selected_instruments_valid),
+            df_test)

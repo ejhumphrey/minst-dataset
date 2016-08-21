@@ -183,3 +183,10 @@ def test_Collection_view(test_obs):
     ds = model.Collection(test_obs)
     rwc_view = ds.view(column='dataset', filter_value="rwc").to_dataframe()
     assert set(rwc_view["dataset"].unique()) == set(["rwc"])
+
+
+def test_partition_collection(test_obs):
+    dset = model.Collection(test_obs * 10)
+    train, valid, test = model.partition_collection(
+        dset, test_set='rwc', train_val_split=0.5)
+    assert len(train) == len(valid) == len(test) == 10
