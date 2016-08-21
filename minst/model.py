@@ -111,13 +111,14 @@ class Observation(object):
         return success
 
 
-def safe_obs(obs, data_root=None):
+def safe_obs(obs, audio_root=''):
     """Get dict from an Observation if an observation, else just dict"""
-    if not os.path.exists(obs['audio_file']) and data_root:
-        if not os.path.exists(data_root):
+    if not os.path.exists(obs['audio_file']) and audio_root:
+        if not os.path.exists(audio_root):
             raise MissingDataException(
                 "Input data {} missing; have you extracted the zip?")
-        new_audio = os.path.join(data_root, obs['audio_file'])
+        if not obs['audio_file'].startswith(audio_root):
+            new_audio = os.path.join(audio_root, obs['audio_file'])
         if os.path.exists(new_audio):
             obs['audio_file'] = new_audio
     if isinstance(obs, Observation):
@@ -218,20 +219,24 @@ class Collection(object):
     def copy(self, deep=True):
         return Collection(copy.deepcopy(self._observations))
 
-    def view(self, dataset_filter):
-        """Returns a copy of the analyzer pointing to the desired dataset.
+    def view(self, column, filter_value):
+        """Returns a copy of the collection restricted to the filter value.
+
         Parameters
         ----------
-        dataset_filter : str
-            String in ["rwc", "uiowa", "philharmonia"] which is
-            the items in the dataset to return.
+        column : str
+            Name of the column for filtering.
+
+        filter_value : obj
+            Value to restrict the collection.
 
         Returns
         -------
+
         """
-        thecopy = copy.copy(self.to_df())
-        ds_view = thecopy[thecopy["dataset"] == dataset_filter]
-        return ds_view
+        thecopy = copy.copy(self.to_dataframe())
+        ds_view = thecopy[thecopy[column] == filter_value]
+        return Collection.from_dataframe(ds_view, self.audio_root)
 
 
 def load(filename, audio_root):

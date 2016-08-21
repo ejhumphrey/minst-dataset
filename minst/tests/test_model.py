@@ -155,5 +155,5 @@ def test_Collection_from_dataframe(test_obs):
 
 def test_Collection_view(test_obs):
     ds = model.Collection(test_obs)
-    rwc_view = ds.view("rwc")
+    rwc_view = ds.view(column='dataset', filter_value="rwc").to_dataframe()
     assert set(rwc_view["dataset"].unique()) == set(["rwc"])
