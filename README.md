@@ -114,7 +114,7 @@ df = pd.read_csv('rwc_notes.csv', index_col=[0,1])
 |violin|601|971|3436|1853|
 
 
-## Appendix: Segmenting the audio
+## Appendix: Computing / finding note onsets
 
 This repository contains some generated / annotated onsets for the instruments we have selected in the taxonomy. If you wish to annotate more, however, you will need to do the following:
 
@@ -134,7 +134,7 @@ Optionally, you can run a segmentation algorithm over the resulting index. This 
 
 Warning: buggy.
 ```
-$ python scripts/segment_collection.py uiowa_index.csv uiowa_onsets \
+$ python scripts/compute_note_onsets.py uiowa_index.csv uiowa_onsets \
     segment_index.csv --mode logcqt --num_cpus -1 --verbose 50
 ```
 

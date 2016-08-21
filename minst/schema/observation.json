@@ -4,7 +4,12 @@
         "source_key": { "type": "string" },
         "partition": { "type": "string" },
         "start_time": { "type": "number", "minimum": 0.0 },
-        "note_number": { "type": "number" },
+        "note_number": {
+            "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+            ]
+        },
         "dynamic": { "type": "string" },
         "instrument": { "type": "string" },
         "index": { "type": "string" },

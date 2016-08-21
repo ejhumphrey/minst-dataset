@@ -14,6 +14,11 @@ def data_root():
 
 
 @pytest.fixture()
+def onset_root(data_root):
+    return os.path.join(data_root, 'onsets')
+
+
+@pytest.fixture()
 def raw_data_root(data_root):
     return os.path.join(data_root, RAW)
 
