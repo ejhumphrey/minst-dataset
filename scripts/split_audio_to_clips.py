@@ -159,6 +159,10 @@ def audio_collection_to_observations(segment_index_file, note_index_file,
     count = 0
     observations = []
     for idx, row in segment_df.iterrows():
+        if pd.isnull(row.onsets_file):
+            logger.warning("No onset file for {} [{}]; moving on.".format(
+                row.audio_file, row.dataset))
+            continue
         observations += audio_to_observations(
             idx, row.audio_file, row.onsets_file, note_audio_dir,
             file_ext='flac', dataset=row.dataset, instrument=row.instrument,

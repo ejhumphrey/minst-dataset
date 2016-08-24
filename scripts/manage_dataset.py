@@ -1,17 +1,17 @@
-"""Create an example notes dataset with N files sampled from
-the original datasets.
+"""Perform various functions dealing with datasets.
 
 Usage:
- example_datasets.py [options] <destination_dir> <source_index>...
+ manage_dataset.py join <sources>... --output=MASTER_INDEX
+ manage_dataset.py split <source_index> <test_set> <train_val_split> <output>
+ manage_dataset.py example [options] <destination_dir> <source_index>... --n_files=N
 
 Arguments:
- destination_dir  Directory to store the final note data.
- source_index     Indeces to use to generate the data.
-                  These should be x_notes.csv files.
+ join     Combine index csv files into one file.
+ split    Perform a train-test split.
+ example  Create an example notes dataset with N files sampled from
+          the original datasets.
 
 Options:
- --n_files=N      Number of files to sample from each source
-                  dataset. [default: 4]
 """
 from __future__ import print_function
 import boltons.fileutils
@@ -24,10 +24,38 @@ import shutil
 import time
 
 import minst.logger
+import minst.model
 import minst.taxonomy
 import minst.utils as utils
 
-logger = logging.getLogger("example_datasets")
+logger = logging.getLogger('manage_dataset')
+
+
+def join_note_files(sources, output_path):
+    """Load all of the sources into memory, join them to one dataframe,
+    and write them back out to output_path.
+    """
+    source_data = []
+    for path in sources:
+        source_data.append(pd.read_csv(path, index_col=0))
+
+    final_data = pd.concat(source_data)
+    boltons.fileutils.mkdir_p(os.path.dirname(output_path))
+    final_data.to_csv(output_path)
+
+
+def train_test_split(source_index, test_set, train_val_split, output):
+    """Using test_set as the 'hold-out-set', segment source_index
+    into train/test splits at the ratio train_test_split, and
+    write the result to output.
+    """
+    source = pd.read_csv(source_index, index_col=0)
+    collection = minst.model.Collection.from_dataframe(source)
+
+    train, valid, test = minst.model.partition_collection(
+        collection, test_set, train_val_split)
+
+    ## TODO: Do something with these now.
 
 
 def copy_example_datasets(destination_dir, source_indeces, n_files):
@@ -82,9 +110,19 @@ if __name__ == "__main__":
     logging.config.dictConfig(minst.logger.get_config(level))
 
     t0 = time.time()
-    copy_example_datasets(
-        arguments['<destination_dir>'],
-        arguments['<source_index>'],
-        int(arguments['--n_files']))
+    if arguments['join']:
+        join_note_files(arguments['<sources>'], arguments['--output'])
+    elif arguments['split']:
+        train_test_split(arguments['<source_index>'][0],
+                         # the above requires the [0] because we use
+                         # source_index as a list for examples...
+                         arguments['<test_set>'],
+                         float(arguments['<train_val_split>']),
+                         arguments['<output>'])
+    elif arguments['example']:
+        copy_example_datasets(
+            arguments['<destination_dir>'],
+            arguments['<source_index>'],
+            int(arguments['--n_files']))
     t_end = time.time()
-    print("example_datasets.py completed in: {}s".format(t_end - t0))
+    print("manage_dataset.py completed in: {}s".format(t_end - t0))
