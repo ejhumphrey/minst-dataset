@@ -1,8 +1,13 @@
 {
     "type": "object",
     "properties": {
-        "source_key": { "type": "string" },
-        "partition": { "type": "string" },
+        "source_index": { "type": "string" },
+        "partition": {
+            "oneOf": [
+                { "type": "string" },
+                { "type": "null" }
+            ]
+        },
         "start_time": { "type": "number", "minimum": 0.0 },
         "note_number": {
             "oneOf": [
@@ -23,5 +28,6 @@
         "audio_file": { "type": "string" },
         "duration": { "type": "number" },
         "features": { "type": "object" }
-    }
+    },
+    "additionalProperties": false
 }

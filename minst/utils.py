@@ -191,7 +191,7 @@ def check_audio_file(filename, min_duration=0.0):
     try:
         aobj = claudio.fileio.AudioFile(filename, bytedepth=2)
         status = aobj.duration >= min_duration
-    except (AssertionError, EOFError, wave.Error, ValueError) as derp:
+    except (IOError, AssertionError, EOFError, wave.Error, ValueError) as derp:
         # This is a claudio bug, eventually will be a SoX error
         error = derp
 

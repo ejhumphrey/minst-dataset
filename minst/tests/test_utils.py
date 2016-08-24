@@ -7,7 +7,7 @@ import os
 import minst.logger
 import minst.utils
 
-logging.config.dictConfig(minst.logger.get_config('DEBUG'))
+logging.config.dictConfig(minst.logger.get_config('INFO'))
 
 
 def collect_files(exts, data, depth=8):
@@ -58,6 +58,8 @@ def test_check_audio_file(data_root):
 
     for af in collect_files(['zip'], data_root):
         __test(minst.utils.check_audio_file(af)[0], False)
+
+    __test(minst.utils.check_audio_file('heavy_metal.wav')[0], False)
 
 
 def test_check_many_audio_files(data_root):
