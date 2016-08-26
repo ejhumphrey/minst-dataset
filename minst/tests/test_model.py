@@ -226,10 +226,10 @@ def test_partition_collection(test_bigobs):
         'dataset'] != 'rwc')
 
     not_test_df = partition_df[partition_df['partition'] != 'test']
-    train_percent = len(not_test_df[not_test_df['partition'] == 'train']) / not_test_df.size
+    train_percent = len(not_test_df[not_test_df['partition'] == 'train']) / float(not_test_df.size)
     assert train_percent > 0 and train_percent < 1.
     np.testing.assert_approx_equal(train_percent, split, 1)
 
-    valid_percent = len(not_test_df[not_test_df['partition'] == 'valid']) / not_test_df.size
+    valid_percent = len(not_test_df[not_test_df['partition'] == 'valid']) / float(not_test_df.size)
     assert valid_percent > 0 and valid_percent < 1.
     np.testing.assert_approx_equal(valid_percent, split, 1)
