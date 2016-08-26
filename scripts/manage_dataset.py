@@ -52,10 +52,10 @@ def train_test_split(source_index, test_set, train_val_split, output):
     source = pd.read_csv(source_index, index_col=0)
     collection = minst.model.Collection.from_dataframe(source)
 
-    train, valid, test = minst.model.partition_collection(
+    partition_index_df = minst.model.partition_collection(
         collection, test_set, train_val_split)
 
-    ## TODO: Do something with these now.
+    partition_index_df.to_csv(output)
 
 
 def copy_example_datasets(destination_dir, source_indeces, n_files):
