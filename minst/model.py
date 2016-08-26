@@ -274,7 +274,7 @@ def partition_collection(collection, test_set, train_val_split=0.2,
         the partiition in ['train', 'valid', 'test']
     """
     df = collection.to_dataframe()
-    df_test = collection.view(
+    test_df = collection.view(
         column='dataset', filter_value=test_set).to_dataframe()
     datasets = set(df["dataset"].unique()) - set([test_set])
     search_df = df[df["dataset"].isin(datasets)]
@@ -306,11 +306,11 @@ def partition_collection(collection, test_set, train_val_split=0.2,
     # Create the final dataframe
     partition = (['train'] * len(train_df) +
                  ['valid'] * len(valid_df) +
-                 ['test'] * len(df_test))
+                 ['test'] * len(test_df))
 
-    index = (train_df.index +
-             valid_df.index +
-             df_test.index)
+    index = (train_df.index.tolist() +
+             valid_df.index.tolist() +
+             test_df.index.tolist())
 
     result = pd.DataFrame(partition,
                           columns=['partition'],
