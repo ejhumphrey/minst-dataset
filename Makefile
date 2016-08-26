@@ -71,8 +71,8 @@ $(GOODSOUNDS_NOTES): $(GOODSOUNDS_INDEX)
 
 
 # Build the master index from the note indeces
-$(MASTER_INDEX): $(UIOWA_NOTES) $(PHIL_NOTES) $(RWC_NOTES)
-	$(PYTHON) scripts/manage_dataset.py join $(UIOWA_NOTES) $(PHIL_NOTES) $(RWC_NOTES) --output=$(MASTER_INDEX)
+$(MASTER_INDEX): $(UIOWA_NOTES) $(RWC_NOTES) #$(PHIL_NOTES)
+	$(PYTHON) scripts/manage_dataset.py join $(UIOWA_NOTES) $(RWC_NOTES) --output=$(MASTER_INDEX) # $(PHIL_NOTES)
 
 $(RWC_TRAIN_INDEX): $(MASTER_INDEX)
 	echo $(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) rwc $(TRAIN_TEST_SPLIT) $(RWC_TRAIN_INDEX)
