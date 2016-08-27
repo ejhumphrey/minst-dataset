@@ -89,12 +89,33 @@ goodsounds_notes.csv
 
 If the dataset is not available on your machine, `make build` should skip it.
 
-*Note:* These are written to the directory from which the Makefile is called, i.e. repository root. This is due to change per [#23](https://github.com/ejhumphrey/minst-dataset/issues/23).
+### Build final dataset *.csv's for experimenting
 
-We recommend when loading these into pandas that you use set index_col=[0, 1], since the first two columns are part of the multi_index, where column 0 is the original file hash, and column 1 is the note index:
+```
+$ make dataset
+```
 
+This will generate the following files in your data_dir (~/data/minst):
+* master_index.csv
+A master dataset file containing pointers to the audio and targets/metadata.
+The "index" is the first column.
+
+* rwc_partitions.csv
+* uiowa_partitions.csv
+* philharmonia_partitions.csv
+These csvs designed to be sort of "three-fold" cross validation, where each dataset acts as a hold-out test set. The dataset in the name is the test set.
+
+These csvs contain two columns: "index", and "partition".
+"Index" is the index in `master_index.csv`, and "partition" is one of ['train', 'val', 'test'], and specifies which dataset partition to use
+the files for.
+
+If you are loading using python/pandas, getting the training data would
+look like this:
 ```python
-df = pd.read_csv('rwc_notes.csv', index_col=[0,1])
+master_df = pd.read_csv('master_index.csv', index_col=0)
+partition_df = pd.read_csv('rwc_partitions.csv')
+
+train_df = master_df.loc[(partition_df['partition'] == 'train').index]
 ```
 
 ## Note Counts Per Dataset for Accepted Instruments

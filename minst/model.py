@@ -269,11 +269,13 @@ def partition_collection(collection, test_set, train_val_split=0.2,
 
     Returns
     -------
-    train_df, valid_df, test_df : pd.DataFrame
-        DataFrames of observations for train, validation, and test.
+    partition_df : pd.DataFrame
+        DataFrame with only an index to the original table, and
+        the partiition in ['train', 'valid', 'test']
     """
     df = collection.to_dataframe()
-    df_test = collection.view(column='dataset', filter_value=test_set)
+    test_df = collection.view(
+        column='dataset', filter_value=test_set).to_dataframe()
     datasets = set(df["dataset"].unique()) - set([test_set])
     search_df = df[df["dataset"].isin(datasets)]
 
@@ -298,6 +300,19 @@ def partition_collection(collection, test_set, train_val_split=0.2,
         selected_instruments_train.append(traindf)
         selected_instruments_valid.append(validdf)
 
-    return (pd.concat(selected_instruments_train),
-            pd.concat(selected_instruments_valid),
-            df_test)
+    train_df = pd.concat(selected_instruments_train)
+    valid_df = pd.concat(selected_instruments_valid)
+
+    # Create the final dataframe
+    partition = (['train'] * len(train_df) +
+                 ['valid'] * len(valid_df) +
+                 ['test'] * len(test_df))
+
+    index = (train_df.index.tolist() +
+             valid_df.index.tolist() +
+             test_df.index.tolist())
+
+    result = pd.DataFrame(partition,
+                          columns=['partition'],
+                          index=index)
+    return result
