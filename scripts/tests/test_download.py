@@ -27,6 +27,8 @@ def test_download_one(workspace):
     assert DL.download_one(url, fout)
 
 
+# These tests might be flaky as a function of strength of connection. Shouldn't
+# be an issue at the CI level, which will be hardwired.
 @pytest.mark.skipif(not DL.check_connection(), reason='No internet')
 def test_download_many(workspace):
     urls = ["https://www.wikipedia.org/portal/wikipedia.org/assets/img/"

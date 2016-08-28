@@ -30,3 +30,6 @@ def test_philz_collect(philz_root):
     philz_df = philz.collect(philz_root)
     helpers.__test_df_has_data(philz_df)
     helpers.__test_pd_output(philz_df, philz.NAME)
+    print(philz_df.ix[0])
+    assert 'onsets_file' in philz_df.columns
+    assert len(philz_df.onsets_file.dropna()) == len(philz_df)
