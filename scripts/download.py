@@ -18,7 +18,7 @@ import time
 logger = logging.getLogger()
 
 
-def check_connection(default='http://74.125.228.100', timeout=1):
+def check_connection(default='http://google.com', timeout=1):
     """Test the internet connection.
 
     Parameters

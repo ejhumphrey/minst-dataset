@@ -5,8 +5,8 @@ from . import goodsounds
 
 
 SOURCES = {
-    'philharmonia': philz,
-    'rwc': rwc,
-    'uiowa': uiowa,
-    'goodsounds': goodsounds
+    philz.NAME: philz,
+    rwc.NAME: rwc,
+    uiowa.NAME: uiowa,
+    goodsounds.NAME: goodsounds
 }

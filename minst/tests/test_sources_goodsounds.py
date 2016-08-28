@@ -28,3 +28,6 @@ def test_goodsounds_df_collect(goodsounds_root):
     goodsounds_df = goodsounds.collect(goodsounds_root)
     helpers.__test_df_has_data(goodsounds_df)
     helpers.__test_pd_output(goodsounds_df, goodsounds.NAME)
+    print(goodsounds_df.ix[0])
+    assert 'onsets_file' in goodsounds_df.columns
+    assert len(goodsounds_df.onsets_file.dropna()) == len(goodsounds_df)

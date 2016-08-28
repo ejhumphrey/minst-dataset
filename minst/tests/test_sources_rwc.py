@@ -34,3 +34,5 @@ def test_rwc_collect(rwc_root):
     rwc_df = rwc.collect(rwc_root)
     helpers.__test_df_has_data(rwc_df)
     helpers.__test_pd_output(rwc_df, rwc.NAME)
+    assert 'onsets_file' in rwc_df.columns
+    assert len(rwc_df.onsets_file.dropna()) == len(rwc_df)

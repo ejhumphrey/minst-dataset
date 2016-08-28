@@ -44,7 +44,8 @@ def collect_onsets(segment_index_path, output_dir, dry_run=False):
     dry_run : bool
         If true, don't actually write anything; just print it to screen.
     """
-    dframe = pd.read_csv(segment_index_path, index_col=1)
+    # TODO: This was index_col=1, but why??
+    dframe = pd.read_csv(segment_index_path, index_col=0)
     print("begin collect_onsets()")
     print("segment_index contains {} rows.".format(len(dframe)))
     instrument_dframe = dframe.loc[dframe['instrument'].dropna().index]
@@ -58,6 +59,7 @@ def collect_onsets(segment_index_path, output_dir, dry_run=False):
     print("Valid fix files available: {}".format(onsets_exist.sum()))
 
     onset_count = 0
+    success = True
     for idx, row in instrument_dframe.iterrows():
         # Load csv data
         onsets_file = row['onsets']
@@ -78,11 +80,14 @@ def collect_onsets(segment_index_path, output_dir, dry_run=False):
             boltons.fileutils.mkdir_p(output_dir)
             print("Writing:", output_path)
             onsets.to_csv(output_path)
+            success &= os.path.exists(output_path)
         else:
             print("[Not Actually] Writing:", output_path)
 
     print("{} onsets were collected from {} files.".format(
         onset_count, len(instrument_dframe)))
+
+    return success
 
 
 if __name__ == "__main__":

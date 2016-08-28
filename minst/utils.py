@@ -283,3 +283,19 @@ def canny(nlen, beta, sig=2.0):
     n = np.linspace(-beta, beta, nlen)
     alpha = (-n / np.power(sig, 2.))
     return alpha * np.exp(-(n ** 2.0) / (2.0 * (sig ** 2.0)))
+
+
+def find_onset_file_from_uid(index, onset_dir):
+    """Find an onsetfile of the form [index].csv in the onset_dir.
+
+    Parameters
+    ----------
+    index : str
+        index as generated in collect()
+
+    onset_dir : str
+        Path to the onsets.
+    """
+    onset_file = "{}.csv".format(index)
+    onset_path = os.path.abspath(os.path.join(onset_dir, onset_file))
+    return onset_path if os.path.exists(onset_path) else None

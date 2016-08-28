@@ -44,6 +44,12 @@ def goodsounds_root(raw_data_root):
 
 
 @pytest.fixture()
+def audio_file(goodsounds_root):
+    return os.path.join(goodsounds_root, 'sound_files', 'bass',
+                        'bass_alejandro_recordings', 'neumann', '0005.wav')
+
+
+@pytest.fixture()
 def workspace(request):
     test_workspace = tempfile.mkdtemp()
 

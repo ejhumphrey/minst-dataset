@@ -155,6 +155,8 @@ def audio_collection_to_observations(segment_index_file, note_index_file,
         # other datasets, even if this one
         return True
 
+    # Drop rows that do not have onsets_files.
+    segment_df = segment_df.loc[segment_df.onsets_file.dropna().index]
     utils.create_directory(note_audio_dir)
     count = 0
     observations = []
