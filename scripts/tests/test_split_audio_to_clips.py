@@ -58,6 +58,25 @@ def test_audio_collection_to_observations(uiowa_root, onset_root, workspace):
     seg_file = os.path.join(workspace, 'seg_index.csv')
     seg_index.to_csv(seg_file)
 
-    stat = SC.audio_collection_to_observations(
-        seg_file, 'note_index.csv', output_dir)
-    assert stat
+    assert SC.audio_collection_to_observations(
+        seg_file, 'successful_note_index.csv', output_dir)
+
+
+def test_audio_collection_to_observations_no_onsets(uiowa_root, workspace):
+    audio_file = os.path.join(
+        uiowa_root, "theremin.music.uiowa.edu/sound files/MIS/Brass/tuba"
+                    "/Tuba.ff.C3C4.aiff")
+    assert os.path.exists(audio_file)
+    index = "uiowa78fae0a0"
+
+    output_dir = os.path.join(workspace, 'notes_tmp')
+    utils.create_directory(output_dir)
+
+    rec = dict(audio_file=audio_file, onsets_file=None,
+               instrument="Tuba", dataset='uiowa', dynamic='ff')
+    seg_index = pd.DataFrame.from_records([rec], index=[index])
+    seg_file = os.path.join(workspace, 'seg_index.csv')
+    seg_index.to_csv(seg_file)
+
+    assert SC.audio_collection_to_observations(
+        seg_file, 'empty_note_index.csv', output_dir)
