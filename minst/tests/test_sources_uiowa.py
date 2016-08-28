@@ -38,3 +38,5 @@ def test_uiowa_collect(uiowa_root):
     uiowa_df = uiowa.collect(uiowa_root)
     helpers.__test_df_has_data(uiowa_df)
     helpers.__test_pd_output(uiowa_df, uiowa.NAME)
+    assert 'onsets_file' in uiowa_df.columns
+    assert len(uiowa_df.onsets_file.dropna()) == len(uiowa_df)
