@@ -73,6 +73,9 @@ def segment_many(index, audio_files, mode, output_directory,
 
     Parameters
     ----------
+    index : array_like
+        Index values for the audio files; must be unique!
+
     audio_files : array_like
         Collection of audio filepaths.
 
@@ -90,6 +93,9 @@ def segment_many(index, audio_files, mode, output_directory,
     output_paths : list
         Filepaths of generated output, or None for failures.
     """
+    if len(set(index)) < len(index):
+        raise ValueError("All index values must be unique.")
+
     logger.info("beginning segmenting {} files with mode={}"
                 "".format(len(index), mode))
     utils.create_directory(output_directory)
