@@ -289,8 +289,14 @@ def partition_collection(collection, test_set, train_val_split=0.2,
                            "to split.".format(instrument))
             continue
 
-        traindf, validdf = train_test_split(
-            instrument_df, test_size=train_val_split)
+        groups = instrument_df.groupby(['source_index'])
+        train_grps, valid_grps = train_test_split(
+            list(groups), test_size=train_val_split)
+
+        # Groups get backed out as (source_index, dataframe) tuples, so stick
+        # these back together now that they've been partitioned.
+        traindf = pd.concat(x[1] for x in train_grps)
+        validdf = pd.concat(x[1] for x in valid_grps)
 
         if max_files_per_class:
             replace = False if len(traindf) > max_files_per_class else True

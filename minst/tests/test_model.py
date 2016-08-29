@@ -23,6 +23,12 @@ def test_obs():
              instrument="tuba", source_index="001", start_time=0.0,
              duration=1.0, note_number=None, dynamic="pp", partition=None),
         dict(index="rwcabc234", dataset="rwc", audio_file="foo_01.aiff",
+             instrument="tuba", source_index="001", start_time=0.0,
+             duration=1.0, note_number=None, dynamic="mf", partition=None),
+        dict(index="rwcabc534", dataset="rwc", audio_file="foo_01.aiff",
+             instrument="saxophone", source_index="002", start_time=0.0,
+             duration=1.0, note_number=None, dynamic="mf", partition=None),
+        dict(index="rwcabc675", dataset="rwc", audio_file="foo_01.aiff",
              instrument="saxophone", source_index="002", start_time=0.0,
              duration=1.0, note_number=None, dynamic="mf", partition=None),
         dict(index="uiowaabc098", dataset="uiowa", audio_file="foo_01.mp3",
@@ -191,7 +197,7 @@ def test_Collection_validate(test_obs, rwc_obs):
 
 def test_Collection_to_dataframe(test_obs):
     dset = model.Collection(test_obs).to_dataframe()
-    assert len(dset) == 6
+    assert len(dset) == len(test_obs)
     assert dset.index[0] == test_obs[0]['index']
 
 
@@ -199,7 +205,7 @@ def test_Collection_from_dataframe(test_obs):
     index = [x.pop('index') for x in test_obs]
     df = pd.DataFrame.from_records(test_obs, index=index)
     dset = model.Collection.from_dataframe(df)
-    assert len(dset) == 6
+    assert len(dset) == len(test_obs)
     assert df.ix[0].name == dset[0].index
 
 
@@ -213,6 +219,7 @@ def test_partition_collection(test_bigobs):
     dset = model.Collection(test_bigobs)
     dset_df = dset.to_dataframe()
     split = 0.5
+    test_set = 'philharmonia'
     partition_df = model.partition_collection(
         dset, test_set='rwc', train_val_split=split)
     assert len(partition_df) == len(dset)
@@ -226,10 +233,22 @@ def test_partition_collection(test_bigobs):
         'dataset'] != 'rwc')
 
     not_test_df = partition_df[partition_df['partition'] != 'test']
-    train_percent = len(not_test_df[not_test_df['partition'] == 'train']) / float(not_test_df.size)
+    train_percent = (len(not_test_df[not_test_df['partition'] == 'train']) /
+                     float(not_test_df.size))
     assert train_percent > 0 and train_percent < 1.
     np.testing.assert_approx_equal(train_percent, split, 1)
 
-    valid_percent = len(not_test_df[not_test_df['partition'] == 'valid']) / float(not_test_df.size)
+    valid_percent = (len(not_test_df[not_test_df['partition'] == 'valid']) /
+                     float(not_test_df.size))
     assert valid_percent > 0 and valid_percent < 1.
     np.testing.assert_approx_equal(valid_percent, split, 1)
+
+    # Make sure that there is no source_index cross contamination
+    train_df = dset_df.loc[
+        partition_df[partition_df['partition'] == 'train'].index]
+    valid_df = dset_df.loc[
+        partition_df[partition_df['partition'] == 'valid'].index]
+
+    train_sources = set(train_df.source_index.values)
+    valid_sources = set(valid_df.source_index.values)
+    assert len(valid_sources.intersection(train_sources)) == 0
