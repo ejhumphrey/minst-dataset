@@ -4,7 +4,7 @@ SEGMENTS_DATA_DIR=$(DATA_DIR)/note_files
 
 UIOWA_DIR=$(DATA_DIR)/uiowa
 PHIL_DIR=$(DATA_DIR)/philharmonia
-RWC_DIR=$(DATA_DIR)/rwc
+RWC_DIR=$(DATA_DIR)/RWC\ Instruments
 GOODSOUNDS_DIR=$(DATA_DIR)/good-sounds
 
 UIOWA_INDEX=$(DATA_DIR)/uiowa_index.csv
