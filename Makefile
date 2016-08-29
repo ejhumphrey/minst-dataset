@@ -13,14 +13,14 @@ RWC_INDEX=$(DATA_DIR)/rwc_index.csv
 GOODSOUNDS_INDEX=$(DATA_DIR)/goodsounds_index.csv
 
 UIOWA_NOTES=$(DATA_DIR)/uiowa_notes.csv
-PHIL_NOTES=$(DATA_DIR)/phil_notes.csv
+PHIL_NOTES=$(DATA_DIR)/philharmonia_notes.csv
 RWC_NOTES=$(DATA_DIR)/rwc_notes.csv
 GOODSOUNDS_NOTES=$(DATA_DIR)/goodsounds_notes.csv
 
 MASTER_INDEX=$(DATA_DIR)/master_index.csv
-RWC_TRAIN_INDEX=$(DATA_DIR)/rwc_train_index.csv
-PHIL_TRAIN_INDEX=$(DATA_DIR)/phil_train_index.csv
-UIOWA_TRAIN_INDEX=$(DATA_DIR)/uiowa_train_index.csv
+RWC_TRAIN_INDEX=$(DATA_DIR)/rwc_partitions.csv
+PHIL_TRAIN_INDEX=$(DATA_DIR)/philharmonia_partitions.csv
+UIOWA_TRAIN_INDEX=$(DATA_DIR)/uiowa_partitions.csv
 
 TRAIN_TEST_SPLIT=.2
 
@@ -34,7 +34,7 @@ deps:
 
 
 clean:
-	rm -rf $(UIOWA_INDEX) $(PHIL_INDEX) $(RWC_INDEX) $(UIOWA_NOTES) $(PHIL_NOTES) $(RWC_NOTES) $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES)
+	rm -rf $(UIOWA_INDEX) $(PHIL_INDEX) $(RWC_INDEX) $(UIOWA_NOTES) $(PHIL_NOTES) $(RWC_NOTES) $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES) $(MASTER_INDEX) $(RWC_TRAIN_INDEX) $(PHIL_TRAIN_INDEX) $(UIOWA_TRAIN_INDEX)
 
 # Run the download scripts. TODO: Zips?
 download_uiowa:
@@ -73,11 +73,11 @@ $(MASTER_INDEX): $(UIOWA_NOTES) $(RWC_NOTES) $(PHIL_NOTES)
 	$(PYTHON) scripts/manage_dataset.py join $(UIOWA_NOTES) $(RWC_NOTES) --output=$(MASTER_INDEX) $(PHIL_NOTES)
 
 $(RWC_TRAIN_INDEX): $(MASTER_INDEX)
-	echo $(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) rwc $(TRAIN_TEST_SPLIT) $(RWC_TRAIN_INDEX)
+	$(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) rwc $(TRAIN_TEST_SPLIT) $(RWC_TRAIN_INDEX)
 $(PHIL_TRAIN_INDEX): $(MASTER_INDEX)
-	echo $(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) philharmonia $(TRAIN_TEST_SPLIT) $(PHIL_TRAIN_INDEX)
+	$(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) philharmonia $(TRAIN_TEST_SPLIT) $(PHIL_TRAIN_INDEX)
 $(UIOWA_TRAIN_INDEX): $(MASTER_INDEX)
-	echo $(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) uiowa $(TRAIN_TEST_SPLIT) $(UIOWA_TRAIN_INDEX)
+	$(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) uiowa $(TRAIN_TEST_SPLIT) $(UIOWA_TRAIN_INDEX)
 
 
 uiowa: $(UIOWA_INDEX) $(UIOWA_NOTES)
@@ -85,6 +85,7 @@ philharmonia: $(PHIL_INDEX) $(PHIL_NOTES)
 rwc: $(RWC_INDEX) $(RWC_NOTES)
 goodsounds: $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES)
 dataset: $(MASTER_INDEX) $(RWC_TRAIN_INDEX) $(UIOWA_TRAIN_INDEX) $(PHIL_TRAIN_INDEX)
+
 # build: uiowa philharmonia rwc goodsounds
 build: uiowa rwc philharmonia
 
