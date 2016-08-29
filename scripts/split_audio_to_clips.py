@@ -109,7 +109,7 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
                                output_file))
         if success:
             clip_index = utils.generate_id(
-                input_base, "{}-{}".format(start_time, end_time), hash_len=6)
+                index, "{}-{}".format(start_time, end_time), hash_len=6)
 
             obs = model.Observation(
                 index=clip_index, audio_file=rel_output_file,

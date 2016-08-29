@@ -90,7 +90,5 @@ def normalize_instrument_names(dframe):
     """
     classmap = InstrumentClassMap()
     new_df = dframe.copy()
-    for i in range(len(new_df)):
-        old_class = new_df.iloc[i]["instrument"]
-        new_df.iloc[i]["instrument"] = classmap[old_class]
+    new_df["instrument"] = [classmap[i] for i in dframe.instrument]
     return new_df

@@ -4,7 +4,7 @@ SEGMENTS_DATA_DIR=$(DATA_DIR)/note_files
 
 UIOWA_DIR=$(DATA_DIR)/uiowa
 PHIL_DIR=$(DATA_DIR)/philharmonia
-RWC_DIR=$(DATA_DIR)/RWC\ Instruments
+RWC_DIR=$(DATA_DIR)/rwc
 GOODSOUNDS_DIR=$(DATA_DIR)/good-sounds
 
 UIOWA_INDEX=$(DATA_DIR)/uiowa_index.csv
@@ -68,14 +68,14 @@ $(GOODSOUNDS_NOTES): $(GOODSOUNDS_INDEX)
 	$(PYTHON) scripts/split_audio_to_clips.py $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES) $(SEGMENTS_DATA_DIR)
 
 
-# Build the master index from the note indeces
-$(MASTER_INDEX): $(UIOWA_NOTES) $(RWC_NOTES) #$(PHIL_NOTES)
-	$(PYTHON) scripts/manage_dataset.py join $(UIOWA_NOTES) $(RWC_NOTES) --output=$(MASTER_INDEX) # $(PHIL_NOTES)
+# Build the master index from the note indexes
+$(MASTER_INDEX): $(UIOWA_NOTES) $(RWC_NOTES) $(PHIL_NOTES)
+	$(PYTHON) scripts/manage_dataset.py join $(UIOWA_NOTES) $(RWC_NOTES) --output=$(MASTER_INDEX) $(PHIL_NOTES)
 
 $(RWC_TRAIN_INDEX): $(MASTER_INDEX)
 	echo $(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) rwc $(TRAIN_TEST_SPLIT) $(RWC_TRAIN_INDEX)
-# $(PHIL_TRAIN_INDEX): $(MASTER_INDEX)
-# 	echo $(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) philharmonia $(TRAIN_TEST_SPLIT) $(PHIL_TRAIN_INDEX)
+$(PHIL_TRAIN_INDEX): $(MASTER_INDEX)
+	echo $(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) philharmonia $(TRAIN_TEST_SPLIT) $(PHIL_TRAIN_INDEX)
 $(UIOWA_TRAIN_INDEX): $(MASTER_INDEX)
 	echo $(PYTHON) scripts/manage_dataset.py split $(MASTER_INDEX) uiowa $(TRAIN_TEST_SPLIT) $(UIOWA_TRAIN_INDEX)
 
@@ -84,9 +84,9 @@ uiowa: $(UIOWA_INDEX) $(UIOWA_NOTES)
 philharmonia: $(PHIL_INDEX) $(PHIL_NOTES)
 rwc: $(RWC_INDEX) $(RWC_NOTES)
 goodsounds: $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES)
-dataset: $(MASTER_INDEX) $(RWC_TRAIN_INDEX) $(UIOWA_TRAIN_INDEX) #$(PHIL_TRAIN_INDEX)
+dataset: $(MASTER_INDEX) $(RWC_TRAIN_INDEX) $(UIOWA_TRAIN_INDEX) $(PHIL_TRAIN_INDEX)
 # build: uiowa philharmonia rwc goodsounds
-build: uiowa rwc
+build: uiowa rwc philharmonia
 
 test:
 	./run_tests.sh

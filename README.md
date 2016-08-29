@@ -4,6 +4,13 @@
 
 The MNIST of music instrument sounds.
 
+## What's going on here?
+
+The goal of this project is to consolidate various disparate solo instrument collections into one big, normalized dataset for ease of use, namely with machine learning in mind. Simply put, this aims to be the [MNIST](http://yann.lecun.com/exdb/mnist/) for music audio processing.
+
+![alt tag](https://raw.githubusercontent.com/ejhumphrey/minst-dataset/master/data/flyover-sketch.jpg)
+
+
 ## Installing Dependencies
 
 ```
@@ -21,12 +28,6 @@ This project ships with just enough data to test itself.
 ```
 $ make test
 ```
-
-## What's going on here?
-
-The goal of this project is to consolidate various disparate solo instrument collections into one big, normalized dataset for ease of use, namely with machine learning in mind. Simply put, this aims to be the [MNIST](http://yann.lecun.com/exdb/mnist/) for music audio processing.
-
-![alt tag](https://raw.githubusercontent.com/ejhumphrey/minst-dataset/master/data/flyover-sketch.jpg)
 
 ## Building the dataset from scratch
 
@@ -119,8 +120,12 @@ train_df = master_df.loc[(partition_df['partition'] == 'train').index]
 ```
 
 ## Note Counts Per Dataset for Accepted Instruments
+
+![alt tag](https://raw.githubusercontent.com/ejhumphrey/minst-dataset/master/data/dataset_hist.png)
+
 |Instrument|UIowa|Philharmonia|RWC|Good-Sounds |
 |----------|-----|------------|---|-----------|
+| _totals_ | 3417 | 7923 | 27557 | 12015 |
 |bassoon|122|648|1405||
 |cello|681|776|3196|2118|
 |clarinet|258|770|1433|3359|
