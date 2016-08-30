@@ -43,5 +43,11 @@ def test_train_test_split(workspace, uiowa_root, rwc_root, philz_root):
     assert M.train_test_split(note_index, 'c', 0.2, partition_index)
 
 
-def test_copy_example_datasets():
-    pass
+@pytest.mark.skipif(True, reason='build_dataset is brokes for rwc?')
+def test_copy_example_datasets(workspace, uiowa_root, rwc_root, philz_root):
+    a, b, uiowa_notes_index = scripts_helpers.build_dataset(
+        'uiowa', workspace, uiowa_root)
+    a, b, rwc_notes_index = scripts_helpers.build_dataset(
+        'rwc', workspace, rwc_root)
+    a, b, philz_notes_index = scripts_helpers.build_dataset(
+        'philharmonia', workspace, philz_root)
