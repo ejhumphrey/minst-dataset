@@ -43,11 +43,21 @@ def test_train_test_split(workspace, uiowa_root, rwc_root, philz_root):
     assert M.train_test_split(note_index, 'c', 0.2, partition_index)
 
 
-@pytest.mark.skipif(True, reason='build_dataset is brokes for rwc?')
-def test_copy_example_datasets(workspace, uiowa_root, rwc_root, philz_root):
-    a, b, uiowa_notes_index = scripts_helpers.build_dataset(
-        'uiowa', workspace, uiowa_root)
-    a, b, rwc_notes_index = scripts_helpers.build_dataset(
-        'rwc', workspace, rwc_root)
-    a, b, philz_notes_index = scripts_helpers.build_dataset(
-        'philharmonia', workspace, philz_root)
+def test_create_example_dataset(workspace, uiowa_root, rwc_root, philz_root):
+    notes_dir = os.path.join(workspace, 'notes_data')
+    uiowa_notes_index = scripts_helpers.build_with_default_onsets(
+        'uiowa', workspace, notes_dir, uiowa_root)
+    rwc_notes_index = scripts_helpers.build_with_default_onsets(
+        'rwc', workspace, notes_dir, rwc_root)
+    philz_notes_index = scripts_helpers.build_with_default_onsets(
+        'philharmonia', workspace, notes_dir, philz_root)
+
+    example_dir = os.path.join(workspace, 'example_data')
+    source_indexes = [uiowa_notes_index, rwc_notes_index, philz_notes_index]
+    master_index = "master_index.csv"
+    assert M.create_example_dataset(
+        example_dir, source_indexes, notes_dir,
+        n_per_instrument=4, output_index=master_index)
+
+    df = pd.read_csv(os.path.join(example_dir, master_index))
+    assert len(df) == 24
