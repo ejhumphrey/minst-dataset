@@ -5,7 +5,9 @@ Usage:
  manage_dataset.py split <source_index> <test_set> <train_val_split> <output>
  manage_dataset.py example [options] <destination_dir> \
     <source_index>... \
-    --n_per_instrument=N
+    <note_audio_dir> \
+    --n_per_instrument=N \
+
 
 Arguments:
  join     Combine index csv files into one file.
@@ -155,6 +157,7 @@ if __name__ == "__main__":
         create_example_dataset(
             arguments['<destination_dir>'],
             arguments['<source_index>'],
+            arguments['<note_audio_dir>'],
             int(arguments['--n_per_instrument']))
     t_end = time.time()
     logger.info("manage_dataset.py completed in: {}s".format(t_end - t0))
