@@ -32,15 +32,19 @@ import minst.utils as utils
 logger = logging.getLogger('manage_dataset')
 
 
-def join_note_files(sources, output_index):
-    """Load all of the sources into memory, join them to one dataframe,
-    and write them back out to output_index.
-    """
+def join_dataframes(sources):
     source_data = []
     for path in sources:
         source_data.append(pd.read_csv(path, index_col=0))
 
-    final_data = pd.concat(source_data)
+    return pd.concat(source_data)
+
+
+def join_note_files(sources, output_index):
+    """Load all of the sources into memory, join them to one dataframe,
+    and write them back out to output_index.
+    """
+    final_data = join_dataframes(sources)
     final_data.to_csv(output_index)
     return os.path.exists(output_index)
 
@@ -61,7 +65,9 @@ def train_test_split(source_index, test_set, train_val_split, output_index):
 
 
 def create_example_dataset(destination_dir, source_indexes, note_audio_dir,
-                           n_per_instrument, output_index="master_index.csv"):
+                           n_per_instrument, output_index="master_index.csv",
+                           partition_index_fmt="{}_test_partition.csv",
+                           train_val_split=0.2):
     """Copy `n_per_instrument` from each instrument class in source_indexes
     to destination_dir, and create a new index file at the destination.
 
@@ -89,18 +95,19 @@ def create_example_dataset(destination_dir, source_indexes, note_audio_dir,
 
     boltons.fileutils.mkdir_p(destination_dir)
 
+    dframe = join_dataframes(source_indexes)
+    dframe = minst.taxonomy.normalize_instrument_names(dframe)
+
     indexes = []
     values = []
-    for dataset in source_indexes:
-        logger.info(utils.colorize("Loading {}".format(dataset)))
-        df = pd.read_csv(dataset, index_col=0)
-        df = minst.taxonomy.normalize_instrument_names(df)
-        logger.info("Available Notes:\n {}"
-                    .format(df['instrument'].value_counts()))
+    for dataset in dframe.dataset.unique():
+        dset_df = dframe[dframe.dataset == dataset]
+        logger.info("Dataset: {} Available Notes:\n {}"
+                    .format(dataset, dset_df['instrument'].value_counts()))
 
         # TODO: only use accepted instrument types
-        for instrument_type in df['instrument'].unique():
-            inst_df = df[df['instrument'] == instrument_type]
+        for instrument_type in dset_df.instrument.unique():
+            inst_df = dset_df[dset_df.instrument == instrument_type]
             records = inst_df.sample(n_per_instrument)
             for idx, row in records.iterrows():
 
@@ -114,7 +121,17 @@ def create_example_dataset(destination_dir, source_indexes, note_audio_dir,
     result_df.to_csv(output_file)
     logger.info("Copied {} files to {}"
                 .format(len(result_df), destination_dir))
-    return os.path.exists(output_file)
+
+    success = True
+    if len(result_df.dataset.unique()) < 2:
+        raise ValueError("Need more datasets for partitioning!")
+
+    for test_set in result_df.dataset.unique():
+        partition_index = os.path.join(destination_dir,
+                                       partition_index_fmt.format(test_set))
+        success &= train_test_split(output_file, test_set, train_val_split,
+                                    partition_index)
+    return os.path.exists(output_file) and success
 
 
 if __name__ == "__main__":
