@@ -10,7 +10,7 @@ import minst.model as model
 @pytest.fixture
 def rwc_obs():
     return dict(index='U1309f091', dataset='uiowa',
-                audio_file="RWC_I_01/011/011PFNOP.flac",
+                audio_file="RWC_I_05/172/172VCSPP.flac",
                 instrument='piano', source_index='U12345',
                 start_time=0.0, duration=2, note_number=45,
                 dynamic='pp', partition='test-0')

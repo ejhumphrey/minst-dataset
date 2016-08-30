@@ -65,8 +65,7 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
     -------
     note_files : list of str
         Collection of paths on disk of generated outputs. These will take the
-        following format:
-            {note_audio_dir}/{input_base}_{i}.{file_ext}
+        following format: {note_audio_dir}/{index}.{file_ext}
     """
     # Get the soxi information on this file to get the Duration
     max_length = float(claudio.sox.soxi(audio_file, 'D'))
@@ -97,8 +96,10 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
         if end_time > max_length:
             end_time = max_length
 
-        input_base = utils.filebase(audio_file)
-        rel_output_file = "{}_{}.{}".format(input_base, i, file_ext.strip('.'))
+        clip_index = utils.generate_id(
+            index, "{}-{}".format(start_time, end_time), hash_len=6)
+
+        rel_output_file = "{}.{}".format(clip_index, file_ext.strip('.'))
         output_file = os.path.join(note_audio_dir, rel_output_file)
 
         # split to a new file
@@ -108,8 +109,6 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
                      "".format(success, audio_file, start_time, end_time,
                                output_file))
         if success:
-            clip_index = utils.generate_id(
-                index, "{}-{}".format(start_time, end_time), hash_len=6)
 
             obs = model.Observation(
                 index=clip_index, audio_file=rel_output_file,
