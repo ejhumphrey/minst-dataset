@@ -3,10 +3,7 @@
 Usage:
  manage_dataset.py join <sources>... --output=MASTER_INDEX
  manage_dataset.py split <source_index> <test_set> <train_val_split> <output>
- manage_dataset.py example [options] <destination_dir> \
-    <source_index>... \
-    <note_audio_dir> \
-    --n_per_instrument=N \
+ manage_dataset.py example [options] <destination_dir> <note_audio_dir> <source_index>... [--n_per_instrument=<N>]
 
 
 Arguments:
@@ -81,6 +78,9 @@ def create_example_dataset(destination_dir, source_indexes, note_audio_dir,
     source_indexes : list of str
         Set of index paths to use.
 
+    note_audio_dir : str
+        Directory of source audio files.
+
     n_per_instrument : int
         Number of observations to sample per instrument.
 
@@ -96,6 +96,7 @@ def create_example_dataset(destination_dir, source_indexes, note_audio_dir,
         destination_dir, source_indexes, n_per_instrument))
 
     boltons.fileutils.mkdir_p(destination_dir)
+    boltons.fileutils.mkdir_p(note_audio_dir)
 
     dframe = join_dataframes(source_indexes)
     dframe = minst.taxonomy.normalize_instrument_names(dframe)
@@ -138,10 +139,11 @@ def create_example_dataset(destination_dir, source_indexes, note_audio_dir,
 
 if __name__ == "__main__":
     arguments = docopt(__doc__)
-    logger.debug(arguments)
 
     level = 'INFO' if not arguments.get('--verbose') else 'DEBUG'
     logging.config.dictConfig(minst.logger.get_config(level))
+
+    logger.debug(arguments)
 
     t0 = time.time()
     if arguments['join']:
