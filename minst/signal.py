@@ -2,8 +2,10 @@ import claudio
 import librosa
 import logging
 import numpy as np
+import os
 import pandas as pd
 import scipy.signal as sig
+import shutil
 
 import minst.hll as H
 import minst.utils as utils
@@ -144,3 +146,51 @@ def segment(audio_file, mode, db_delta_thresh=2.5, **kwargs):
                 recs += [rec]
 
     return pd.DataFrame.from_records(recs)
+
+
+def extract_clip(input_file, output_file, start_time, end_time,
+                 duration=None, noise_floor=-65.0):
+    """
+
+    Returns
+    -------
+    success : bool
+        True on successful extraction.
+    """
+    real_duration = end_time - start_time
+    if duration is not None and real_duration >= duration:
+        # We can use sox.trim without issue
+        end_time = start_time + duration
+
+    success = claudio.sox.trim(input_file, output_file, start_time, end_time)
+    logger.debug("claudio.sox.trim: Success={} || {}[{}:{}] -> {}"
+                 "".format(success, input_file, start_time, end_time,
+                           output_file))
+
+    noise_file = ''
+    tmp_output_file = ''
+    if duration is not None and real_duration < duration:
+        # Generate noise pad signal
+        sr = float(claudio.sox.soxi(input_file, 'r'))
+        scale = (10.0**(noise_floor / 20.0)) / 2.0
+        num_samples = int(sr * (duration - real_duration) + 0.5)
+        noise_pad = np.random.normal(loc=0.0, scale=scale, size=(num_samples,))
+
+        noise_file += claudio.util.temp_file('wav')
+        tmp_output_file += claudio.util.temp_file(
+            os.path.splitext(output_file)[-1].strip('.'))
+
+        # Write, append, and move locally
+        claudio.write(noise_file, noise_pad, sr)
+        claudio.sox.concatenate([output_file, noise_file], tmp_output_file)
+        os.rename(tmp_output_file, output_file)
+
+    if os.path.exists(noise_file):
+        os.remove(noise_file)
+
+    if os.path.exists(tmp_output_file):
+        os.remove(noise_file)
+
+    return all([os.path.exists(output_file),
+                not os.path.exists(noise_file),
+                not os.path.exists(tmp_output_file)])
