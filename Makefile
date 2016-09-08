@@ -23,6 +23,7 @@ PHIL_TRAIN_INDEX=$(DATA_DIR)/philharmonia_partitions.csv
 UIOWA_TRAIN_INDEX=$(DATA_DIR)/uiowa_partitions.csv
 
 TRAIN_TEST_SPLIT=.2
+DURATION=1.0
 
 .PHONY: clean test
 
@@ -56,16 +57,16 @@ $(GOODSOUNDS_INDEX):
 
 
 $(UIOWA_NOTES): $(UIOWA_INDEX)
-	$(PYTHON) scripts/split_audio_to_clips.py $(UIOWA_INDEX) $(UIOWA_NOTES) $(SEGMENTS_DATA_DIR)
+	$(PYTHON) scripts/split_audio_to_clips.py $(UIOWA_INDEX) $(UIOWA_NOTES) $(SEGMENTS_DATA_DIR) --duration $(DURATION)
 
 $(PHIL_NOTES): $(PHIL_INDEX)
-	$(PYTHON) scripts/split_audio_to_clips.py $(PHIL_INDEX) $(PHIL_NOTES) $(SEGMENTS_DATA_DIR)
+	$(PYTHON) scripts/split_audio_to_clips.py $(PHIL_INDEX) $(PHIL_NOTES) $(SEGMENTS_DATA_DIR) --duration $(DURATION)
 
 $(RWC_NOTES): $(RWC_INDEX)
-	$(PYTHON) scripts/split_audio_to_clips.py $(RWC_INDEX) $(RWC_NOTES) $(SEGMENTS_DATA_DIR)
+	$(PYTHON) scripts/split_audio_to_clips.py $(RWC_INDEX) $(RWC_NOTES) $(SEGMENTS_DATA_DIR) --duration $(DURATION)
 
 $(GOODSOUNDS_NOTES): $(GOODSOUNDS_INDEX)
-	$(PYTHON) scripts/split_audio_to_clips.py $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES) $(SEGMENTS_DATA_DIR)
+	$(PYTHON) scripts/split_audio_to_clips.py $(GOODSOUNDS_INDEX) $(GOODSOUNDS_NOTES) $(SEGMENTS_DATA_DIR) --duration $(DURATION)
 
 
 # Build the master index from the note indexes

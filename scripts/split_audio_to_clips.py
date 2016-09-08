@@ -3,8 +3,6 @@ audio files, with each containing a single 'note'.
 
 Usage:
  segment_audio.py [options] <segment_index> <note_index> <note_audio_dir>
- segment_audio.py [options] <segment_index> <note_index> <note_audio_dir>
- segment_audio.py [options] <segment_index> <note_index> --pass_thru
 
 Example:
 
@@ -18,12 +16,11 @@ Options:
  -h, --help      Print help.
  --dry-run       Don't actually run sox; just print the function call.
  -v, --verbose   Increase verbosity level.
- --pass_thru     Pass through option writes a note_index with the same
-                 information as the segment_index without extracting notes.
  --limit=N_FILES  Limit to procesing N_FILES for testing.
+ --duration=DUR  Desired (fixed) output duration, in DUR sec, of notes.
 """
 from __future__ import print_function
-# import boltons.fileutils
+
 import claudio
 from docopt import docopt
 import logging
@@ -35,6 +32,7 @@ import time
 
 import minst.logger
 import minst.model as model
+import minst.signal as signal
 import minst.utils as utils
 
 logger = logging.getLogger("split_audio_to_clips")
@@ -43,7 +41,7 @@ PRINT_PROGRESS = True
 
 
 def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
-                          file_ext='flac', **meta):
+                          file_ext='flac', note_duration=None, **meta):
     """Segment an audio file given an onset file, writing outputs to disk.
 
     Paramaters
@@ -57,6 +55,13 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
     note_audio_dir : str
         Path at which to write outputs.
 
+    file_ext : str
+        Desired output audio format for note files.
+
+    note_duration : float, or default=None
+        Desired duration of the output note files; if None, no fixed duration
+        is applied.
+
     **meta : keyword args
         Additional record data to pass on to each observation; see
         model.Observation for more detail.
@@ -67,6 +72,7 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
         Collection of paths on disk of generated outputs. These will take the
         following format: {note_audio_dir}/{index}.{file_ext}
     """
+
     # Get the soxi information on this file to get the Duration
     max_length = float(claudio.sox.soxi(audio_file, 'D'))
 
@@ -97,19 +103,13 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
             end_time = max_length
 
         clip_index = utils.generate_id(
-            index, "{}-{}".format(start_time, end_time), hash_len=6)
+            index, "{}".format(start_time), hash_len=6)
 
         rel_output_file = "{}.{}".format(clip_index, file_ext.strip('.'))
         output_file = os.path.join(note_audio_dir, rel_output_file)
 
-        # split to a new file
-        success = claudio.sox.trim(
-            audio_file, output_file, start_time, end_time)
-        logger.debug("Success={} || {}[{}:{}] -> {}"
-                     "".format(success, audio_file, start_time, end_time,
-                               output_file))
-        if success:
-
+        if signal.extract_clip(audio_file, output_file, start_time,
+                               end_time, note_duration):
             obs = model.Observation(
                 index=clip_index, audio_file=rel_output_file,
                 source_index=index, start_time=start_time,
@@ -121,7 +121,8 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
 
 
 def audio_collection_to_observations(segment_index_file, note_index_file,
-                                     note_audio_dir, limit_n_files=None):
+                                     note_audio_dir, limit_n_files=None,
+                                     note_duration=None):
     """
     Parameters
     ----------
@@ -167,7 +168,7 @@ def audio_collection_to_observations(segment_index_file, note_index_file,
         observations += audio_to_observations(
             idx, row.audio_file, row.onsets_file, note_audio_dir,
             file_ext='flac', dataset=row.dataset, instrument=row.instrument,
-            dynamic=row.dynamic)
+            dynamic=row.dynamic, note_duration=note_duration)
         logger.debug("Generated {} observations ({} of {}).".format(
             len(observations), (count + 1), len(segment_df)))
 
@@ -204,8 +205,8 @@ if __name__ == "__main__":
         arguments['<segment_index>'],
         arguments['<note_index>'],
         arguments['<note_audio_dir>'],
-        # arguments['--pass_thru'],
-        int(arguments['--limit']) if arguments['--limit'] else None)
+        int(arguments['--limit']) if arguments['--limit'] else None,
+        float(arguments['--duration']) if arguments['--duration'] else None)
     t_end = time.time()
     print("segmented audio collection to observations completed in: {}s"
           "".format(t_end - t0))
