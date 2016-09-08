@@ -1,5 +1,6 @@
 import argparse
 import logging
+import logging.config
 import os
 import sys
 
@@ -58,3 +59,4 @@ if __name__ == "__main__":
                           args.index_file, args.backup_index,
                           args.strict_taxonomy)
     sys.exit(0 if success else 1)
+
