@@ -3,8 +3,6 @@ audio files, with each containing a single 'note'.
 
 Usage:
  segment_audio.py [options] <segment_index> <note_index> <note_audio_dir>
- segment_audio.py [options] <segment_index> <note_index> <note_audio_dir>
- segment_audio.py [options] <segment_index> <note_index> --pass_thru
 
 Example:
 
@@ -18,12 +16,11 @@ Options:
  -h, --help      Print help.
  --dry-run       Don't actually run sox; just print the function call.
  -v, --verbose   Increase verbosity level.
- --pass_thru     Pass through option writes a note_index with the same
-                 information as the segment_index without extracting notes.
  --limit=N_FILES  Limit to procesing N_FILES for testing.
+ --duration=DUR  Desired (fixed) output duration, in DUR sec, of notes.
 """
 from __future__ import print_function
-# import boltons.fileutils
+
 import claudio
 from docopt import docopt
 import logging
@@ -124,7 +121,8 @@ def audio_to_observations(index, audio_file, onsets_file, note_audio_dir,
 
 
 def audio_collection_to_observations(segment_index_file, note_index_file,
-                                     note_audio_dir, limit_n_files=None):
+                                     note_audio_dir, limit_n_files=None,
+                                     note_duration=None):
     """
     Parameters
     ----------
@@ -170,7 +168,7 @@ def audio_collection_to_observations(segment_index_file, note_index_file,
         observations += audio_to_observations(
             idx, row.audio_file, row.onsets_file, note_audio_dir,
             file_ext='flac', dataset=row.dataset, instrument=row.instrument,
-            dynamic=row.dynamic)
+            dynamic=row.dynamic, note_duration=note_duration)
         logger.debug("Generated {} observations ({} of {}).".format(
             len(observations), (count + 1), len(segment_df)))
 
@@ -207,8 +205,8 @@ if __name__ == "__main__":
         arguments['<segment_index>'],
         arguments['<note_index>'],
         arguments['<note_audio_dir>'],
-        # arguments['--pass_thru'],
-        int(arguments['--limit']) if arguments['--limit'] else None)
+        int(arguments['--limit']) if arguments['--limit'] else None,
+        float(arguments['--duration']) if arguments['--duration'] else None)
     t_end = time.time()
     print("segmented audio collection to observations completed in: {}s"
           "".format(t_end - t0))
